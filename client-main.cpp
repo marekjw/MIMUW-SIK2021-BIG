@@ -1,15 +1,24 @@
+
 #include <cstdlib>
 #include <unistd.h>
 
-#include <ctime>
-
 #include <algorithm>
 #include <iostream>
+
+#include "client-state.h"
 
 bool is_name_valid(std::string &name) {
   return std::all_of(name.begin(), name.end(),
                      [](char c) { return 33 <= c && c <= 126; });
 }
+
+static void client_to_gui() {}
+
+static void gui_to_client() {}
+
+static void server_to_client() {}
+
+static void client_to_server() {}
 
 int main(int argc, char **argv) {
   std::string game_address, name, gui_address = "localhost";
@@ -55,4 +64,8 @@ int main(int argc, char **argv) {
 
   printf("%s, %s, %s, %d, %d\n", game_address.data(), name.data(),
          gui_address.data(), game_port, gui_port);
+
+  ClientState state{name};
+
+
 }
