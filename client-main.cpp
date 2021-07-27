@@ -1,15 +1,38 @@
 
-#include <cstdlib>
-#include <unistd.h>
-
-#include <algorithm>
-#include <iostream>
-
 #include "client-state.h"
+#include "err.h"
+#include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 bool is_name_valid(std::string &name) {
   return std::all_of(name.begin(), name.end(),
                      [](char c) { return 33 <= c && c <= 126; });
+}
+
+static int setup_connection(const char *address, const char *port,
+                            const addrinfo *hints, addrinfo **addr_ptr) {
+  int sock;
+
+  if (getaddrinfo(address, port, hints, addr_ptr) < 0)
+    syserr("Could not get address info");
+
+  addrinfo *addr = *addr_ptr;
+
+  sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+
+  if (sock < 0)
+    syserr("Could not create socket");
+
+  if (connect(sock, addr->ai_addr, addr->ai_addrlen) < 0)
+    syserr("Could not connect socket");
+
+  return sock;
 }
 
 static void client_to_gui() {}
@@ -23,7 +46,7 @@ static void client_to_server() {}
 int main(int argc, char **argv) {
   std::string game_address, name, gui_address = "localhost";
 
-  int game_port = 2021, gui_port = 20210;
+  std::string game_port{"2021"}, gui_port{"20210"};
 
   int c;
 
@@ -41,7 +64,7 @@ int main(int argc, char **argv) {
       break;
 
     case 'p':
-      game_port = atoi(optarg);
+      game_port = std::string(optarg);
       break;
 
     case 'i':
@@ -49,7 +72,7 @@ int main(int argc, char **argv) {
       break;
 
     case 'r':
-      gui_port = atoi(optarg);
+      gui_port = std::string(optarg);
       break;
     default:
       std::cerr << "Invalid option" << std::endl;
@@ -62,10 +85,25 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  printf("%s, %s, %s, %d, %d\n", game_address.data(), name.data(),
-         gui_address.data(), game_port, gui_port);
+  printf("%s, %s, %s, %s, %s\n", game_address.data(), name.data(),
+         gui_address.data(), game_port.data(), gui_port.data());
 
   ClientState state{name};
 
+  addrinfo *game_addrinfo, *gui_addrinfo, hints;
 
+  memset(&hints, 0, sizeof hints);
+  int game_socket, gui_socket;
+
+  hints.ai_protocol = IPPROTO_UDP;
+  game_socket = setup_connection(game_address.data(), game_port.data(), &hints,
+                                 &game_addrinfo);
+
+  std::cout << "GAME OK\n";
+
+  hints.ai_protocol = IPPROTO_TCP;
+  gui_socket = setup_connection(gui_address.data(), gui_port.data(), &hints,
+                                &gui_addrinfo);
+
+  std::cout << "Everything ok: " << game_socket << " " << gui_socket << "\n";
 }
