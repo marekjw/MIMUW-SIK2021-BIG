@@ -1,4 +1,5 @@
 
+#include "ClientManager.h"
 #include "client-state.h"
 #include "err.h"
 #include <algorithm>
@@ -7,7 +8,6 @@
 #include <iostream>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 bool is_name_valid(std::string &name) {
@@ -34,14 +34,6 @@ static int setup_connection(const char *address, const char *port,
 
   return sock;
 }
-
-static void client_to_gui() {}
-
-static void gui_to_client() {}
-
-static void server_to_client() {}
-
-static void client_to_server() {}
 
 int main(int argc, char **argv) {
   std::string game_address, name, gui_address = "localhost";
@@ -104,6 +96,11 @@ int main(int argc, char **argv) {
   hints.ai_protocol = IPPROTO_TCP;
   gui_socket = setup_connection(gui_address.data(), gui_port.data(), &hints,
                                 &gui_addrinfo);
+
+
+  ClientManager client{state, game_socket, gui_socket};
+
+  client.start();
 
   std::cout << "Everything ok: " << game_socket << " " << gui_socket << "\n";
 }
