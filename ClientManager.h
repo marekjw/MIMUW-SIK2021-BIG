@@ -5,18 +5,29 @@
 
 #include "client-state.h"
 
+#define BUFFER_SIZE 4096
+
+enum msg_from_gui {
+  LEFT_KEY_UP,
+  LEFT_KEY_DOWN,
+  RIGHT_KEU_UP,
+  RIGHT_KEY_DOWN,
+};
+
 class ClientManager {
 private:
   ClientState state;
   int game_socket, gui_socket;
 
-  [[noreturn]] void client_to_gui();
+  char server_buffer[BUFFER_SIZE];
 
-  void gui_to_client();
+  void events_to_gui();
+
+  [[noreturn]] void gui_to_client();
 
   void client_to_server();
 
-  void server_to_client();
+  msg_from_gui read_from_gui();
 
 public:
   ClientManager(ClientState &state, int game_socket, int gui_socket)

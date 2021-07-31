@@ -7,6 +7,10 @@
 #include <pthread.h>
 #include <utility>
 
+#define LEFT_DIRECTION -1
+#define STRAIGHT 0
+#define RIGHT_DIRECTION 1
+
 class ClientState {
 private:
   std::string name;
