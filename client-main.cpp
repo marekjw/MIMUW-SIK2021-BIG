@@ -3,6 +3,7 @@
 #include "client-state.h"
 #include "err.h"
 #include <algorithm>
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -17,10 +18,11 @@ bool is_name_valid(std::string &name) {
 
 static int setup_connection(const char *address, const char *port,
                             const addrinfo *hints, addrinfo **addr_ptr) {
-  int sock;
-
-  if (getaddrinfo(address, port, hints, addr_ptr) < 0)
-    syserr("Could not get address info");
+  int sock, status;
+  if ((status = getaddrinfo(address, port, hints, addr_ptr)) < 0) {
+    fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
+    exit(1);
+  }
 
   addrinfo *addr = *addr_ptr;
 
@@ -36,6 +38,10 @@ static int setup_connection(const char *address, const char *port,
 }
 
 int main(int argc, char **argv) {
+  // session id is the current timestamp in microseconds
+  uint64_t session_id = std::chrono::duration_cast<std::chrono::microseconds>(
+                            std::chrono::system_clock::now().time_since_epoch())
+                            .count();
   std::string game_address, name, gui_address = "localhost";
 
   std::string game_port{"2021"}, gui_port{"20210"};
@@ -80,7 +86,7 @@ int main(int argc, char **argv) {
   printf("%s, %s, %s, %s, %s\n", game_address.data(), name.data(),
          gui_address.data(), game_port.data(), gui_port.data());
 
-  ClientState state{name};
+  ClientState state{name, session_id};
 
   addrinfo *game_addrinfo, *gui_addrinfo, hints;
 
@@ -88,15 +94,16 @@ int main(int argc, char **argv) {
   int game_socket, gui_socket;
 
   hints.ai_protocol = IPPROTO_UDP;
+  // hints.ai_socktype = SOCK_STREAM;
   game_socket = setup_connection(game_address.data(), game_port.data(), &hints,
                                  &game_addrinfo);
 
   std::cout << "GAME OK\n";
 
   hints.ai_protocol = IPPROTO_TCP;
+  // hints.ai_socktype = SOCK_DGRAM;
   gui_socket = setup_connection(gui_address.data(), gui_port.data(), &hints,
                                 &gui_addrinfo);
-
 
   ClientManager client{state, game_socket, gui_socket};
 
