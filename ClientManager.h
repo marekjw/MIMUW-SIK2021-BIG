@@ -9,19 +9,13 @@
 
 #define BUFFER_SIZE 4096
 
-enum msg_from_gui {
-  LEFT_KEY_UP,
-  LEFT_KEY_DOWN,
-  RIGHT_KEU_UP,
-  RIGHT_KEY_DOWN,
-};
 
 class ClientManager {
 private:
   ClientState state;
   int game_socket, gui_socket;
 
-  char server_buffer[BUFFER_SIZE]{};
+  unsigned char server_buffer[BUFFER_SIZE]{};
 
   void events_to_gui();
 
@@ -31,7 +25,17 @@ private:
 
   msg_from_gui read_from_gui();
 
+
+  /**
+   * Sends current state to server - which key is pressed, session_id etc
+   */
   void send_to_server();
+
+  void parse_server_buffer(ssize_t size);
+
+  uint32_t parse_game_number();
+
+  void parse_event(ssize_t &counter, ssize_t size);
 
 public:
   ClientManager(ClientState &state, int game_socket, int gui_socket)

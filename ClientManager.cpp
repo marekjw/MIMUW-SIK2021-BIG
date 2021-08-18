@@ -21,6 +21,7 @@ void ClientManager::start() {
   for (auto &t : threads)
     t.join();
 }
+
 void ClientManager::events_to_gui() {
   // TODO
   while (true) {
@@ -33,30 +34,16 @@ void ClientManager::events_to_gui() {
     if (size == 0)
       break;
 
-    // TODO
+    parse_server_buffer(size);
   }
 }
 
 [[noreturn]] void ClientManager::gui_to_client() {
   while (true) {
-    // read data from the gui
-    switch (read_from_gui()) {
-      // TODO może jakiś mutex na zmienianie (LD, RD, LU)
-    case LEFT_KEY_UP:
-      state.set_turn_direction(STRAIGHT);
-      break;
-    case LEFT_KEY_DOWN:
-      state.set_turn_direction(LEFT_DIRECTION);
-      break;
-    case RIGHT_KEU_UP:
-      state.set_turn_direction(STRAIGHT);
-      break;
-    case RIGHT_KEY_DOWN:
-      state.set_turn_direction(RIGHT_DIRECTION);
-      break;
-    }
+    state.update_direction(read_from_gui());
   }
 }
+
 [[noreturn]] void ClientManager::client_to_server() {
   // TODO
 
@@ -75,6 +62,7 @@ msg_from_gui ClientManager::read_from_gui() {
 }
 void ClientManager::send_to_server() {
   std::vector<unsigned char> message;
+  // TODO change htonl to 64 bit
   message.push_back(htonl(state.get_session_id()));
   message.push_back(htons(state.get_turn_direction()));
   message.push_back(htonl(state.get_next_expected_event_no()));
@@ -92,3 +80,22 @@ ClientManager::~ClientManager() {
   if (close(gui_socket) < 0)
     syserr("Cannot close gui socket");
 }
+
+#define GAME_NO_BYTES 4
+
+void ClientManager::parse_server_buffer(ssize_t size) {
+  uint32_t game_number = parse_game_number();
+  if (state.valid_game_number(0))
+    return;
+
+  ssize_t counter = GAME_NO_BYTES;
+
+  while (counter < size)
+    parse_event(counter, size);
+}
+
+uint32_t ClientManager::parse_game_number() {
+  return ntohl(*(reinterpret_cast<uint32_t *>(server_buffer)));
+}
+
+void ClientManager::parse_event(ssize_t &counter, ssize_t size) {}

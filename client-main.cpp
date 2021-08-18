@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 bool is_name_valid(std::string &name) {
-  return std::all_of(name.begin(), name.end(),
+  return name.size() <= 20 && std::all_of(name.begin(), name.end(),
                      [](char c) { return 33 <= c && c <= 126; });
 }
 
@@ -42,6 +42,8 @@ int main(int argc, char **argv) {
   uint64_t session_id = std::chrono::duration_cast<std::chrono::microseconds>(
                             std::chrono::system_clock::now().time_since_epoch())
                             .count();
+
+  printf("%ld\n", session_id);
   std::string game_address, name, gui_address = "localhost";
 
   std::string game_port{"2021"}, gui_port{"20210"};
