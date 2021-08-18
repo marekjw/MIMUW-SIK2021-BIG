@@ -9,8 +9,6 @@
 #include <unistd.h>
 #include <vector>
 
-#define SEND_TO_SERVER_T 30
-
 void ClientManager::start() {
   std::thread threads[3];
 
@@ -57,8 +55,46 @@ void ClientManager::events_to_gui() {
   }
 }
 msg_from_gui ClientManager::read_from_gui() {
-  // TODO reads from socket from gui
-  return LEFT_KEY_DOWN;
+  unsigned char first_letter = gui_buffer.getchar();
+  std::string pattern;
+
+  if (first_letter == 'L') {
+    pattern = "EFT_KEY_";
+
+    if (!gui_buffer.match_pattern(pattern))
+      return UNKNOWN;
+
+    first_letter = gui_buffer.getchar();
+    if (first_letter == 'U') {
+      if (gui_buffer.getchar() == 'P')
+        return LEFT_KEY_UP;
+    }
+    if (first_letter == 'D') {
+      pattern = std::string("OWN");
+      if (!gui_buffer.match_pattern(pattern))
+        return UNKNOWN;
+      return LEFT_KEY_DOWN;
+    }
+
+  } else if (first_letter == 'R') {
+    pattern = "IGHT_KEY_";
+    if (!gui_buffer.match_pattern(pattern))
+      return UNKNOWN;
+
+    first_letter = gui_buffer.getchar();
+    if (first_letter == 'U') {
+      if (gui_buffer.getchar() == 'P')
+        return RIGHT_KEY_UP;
+    }
+    if (first_letter == 'D') {
+      pattern = std::string("OWN");
+      if (!gui_buffer.match_pattern(pattern))
+        return UNKNOWN;
+      return RIGHT_KEY_DOWN;
+    }
+  }
+
+  return UNKNOWN;
 }
 void ClientManager::send_to_server() {
   std::vector<unsigned char> message;

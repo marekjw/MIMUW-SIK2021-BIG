@@ -3,21 +3,11 @@
 #ifndef CLIENT_STATE_H
 #define CLIENT_STATE_H
 
+#include "constants.h"
 #include <iostream>
 #include <mutex>
 #include <pthread.h>
 #include <utility>
-
-#define LEFT_DIRECTION 2
-#define STRAIGHT 0
-#define RIGHT_DIRECTION 1
-
-enum msg_from_gui {
-  LEFT_KEY_UP,
-  LEFT_KEY_DOWN,
-  RIGHT_KEU_UP,
-  RIGHT_KEY_DOWN,
-};
 
 class ClientState {
 private:
@@ -30,7 +20,7 @@ private:
 
   bool game_no_set;
   uint32_t game_no;
-  
+
   bool left_key_pressed, right_key_pressed;
 
 public:
@@ -85,9 +75,11 @@ public:
       left_key_pressed = false;
       turn_direction = right_key_pressed ? RIGHT_DIRECTION : STRAIGHT;
       break;
-    case RIGHT_KEU_UP:
+    case RIGHT_KEY_UP:
       right_key_pressed = false;
       turn_direction = left_key_pressed ? LEFT_DIRECTION : STRAIGHT;
+      break;
+    case UNKNOWN:
       break;
     }
   }

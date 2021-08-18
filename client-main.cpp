@@ -1,5 +1,6 @@
 
 #include "ClientManager.h"
+#include "StreamBuffer.h"
 #include "client-state.h"
 #include "err.h"
 #include <algorithm>
@@ -12,8 +13,9 @@
 #include <unistd.h>
 
 bool is_name_valid(std::string &name) {
-  return name.size() <= 20 && std::all_of(name.begin(), name.end(),
-                     [](char c) { return 33 <= c && c <= 126; });
+  return name.size() <= 20 && std::all_of(name.begin(), name.end(), [](char c) {
+           return 33 <= c && c <= 126;
+         });
 }
 
 static int setup_connection(const char *address, const char *port,
@@ -107,7 +109,9 @@ int main(int argc, char **argv) {
   gui_socket = setup_connection(gui_address.data(), gui_port.data(), &hints,
                                 &gui_addrinfo);
 
-  ClientManager client{state, game_socket, gui_socket};
+  StreamBuffer gui_buffer{gui_socket};
+
+  ClientManager client{state, gui_buffer, game_socket, gui_socket};
 
   client.start();
 

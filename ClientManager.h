@@ -3,19 +3,17 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
+#include "StreamBuffer.h"
 #include "client-state.h"
-#include <cstring>
+#include "constants.h"
 #include <sys/socket.h>
-
-#define BUFFER_SIZE 4096
-
 
 class ClientManager {
 private:
   ClientState state;
   int game_socket, gui_socket;
-
   unsigned char server_buffer[BUFFER_SIZE]{};
+  StreamBuffer gui_buffer;
 
   void events_to_gui();
 
@@ -24,7 +22,6 @@ private:
   [[noreturn]] void client_to_server();
 
   msg_from_gui read_from_gui();
-
 
   /**
    * Sends current state to server - which key is pressed, session_id etc
@@ -38,8 +35,10 @@ private:
   void parse_event(ssize_t &counter, ssize_t size);
 
 public:
-  ClientManager(ClientState &state, int game_socket, int gui_socket)
-      : game_socket(game_socket), gui_socket(gui_socket), state(state) {
+  ClientManager(ClientState &state, StreamBuffer &gui_buffer, int game_socket,
+                int gui_socket)
+      : game_socket(game_socket), gui_socket(gui_socket), state(state),
+        gui_buffer(gui_buffer) {
     memset(&server_buffer, 0, BUFFER_SIZE);
   };
 
