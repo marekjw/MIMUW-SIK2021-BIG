@@ -5,7 +5,9 @@
 
 #include "../util/constants.h"
 #include "Event.h"
+#include <condition_variable>
 #include <iostream>
+#include <map>
 #include <mutex>
 #include <pthread.h>
 #include <utility>
@@ -27,7 +29,12 @@ private:
 
   std::vector<std::string> players_names;
 
+  // events queue
+  std::map<uint32_t, Event>queue;
+
   // thread safety
+  std::mutex queue_mutex;
+  std::condition_variable cv;
 
 public:
   explicit ClientState(std::string name, uint64_t session_id)
@@ -66,7 +73,7 @@ public:
    * Starts sending messages from the queue to the specified socket
    * @param socket
    */
-  void dispatch_queue(int socket);
+  [[noreturn]] void dispatch_queue(int socket);
 
   /**
    * Adds event to the event queue
@@ -89,8 +96,15 @@ public:
    * @param res
    */
   void append_player_names(std::string &res);
-};
 
+  /**
+   * sends an event to gui, using the socket
+   * the socket has to be connected
+   * @param event - an event to be sent
+   * @param socket - socket over which an event is to be sent
+   */
+   static void send_event_to_gui(Event event, int socket);
+};
 
 // TODO remember to delete strings, cuz they're only pointers rn
 #endif

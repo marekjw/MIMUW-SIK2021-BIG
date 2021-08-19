@@ -12,12 +12,12 @@
 
 class ClientManager {
 private:
-  ClientState state;
+  ClientState &state;
   int game_socket, gui_socket;
   addrinfo *server_addr;
 
   unsigned char server_buffer[BUFFER_SIZE]{};
-  StreamBuffer gui_buffer;
+  StreamBuffer &gui_buffer;
 
   void server_to_gui();
 
@@ -46,9 +46,9 @@ private:
   void handle_game_over_event(uint32_t event_no);
 
 public:
-  ClientManager(ClientState &state, StreamBuffer &gui_buffer, int game_socket,
+  ClientManager(ClientState &client_state, StreamBuffer &gui_buffer, int game_socket,
                 int gui_socket, addrinfo *server_addr)
-      : game_socket(game_socket), gui_socket(gui_socket), state(state),
+      : game_socket(game_socket), gui_socket(gui_socket), state(client_state),
         gui_buffer(gui_buffer), server_addr(server_addr) {
     memset(&server_buffer, 0, BUFFER_SIZE);
   };
