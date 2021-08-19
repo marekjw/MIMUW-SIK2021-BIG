@@ -1,7 +1,7 @@
 #ifndef STREAMBUFFER_H
 #define STREAMBUFFER_H
 
-#include "constants.h"
+#include "../util/constants.h"
 #include <cstdio>
 #include <cstring>
 #include <string>

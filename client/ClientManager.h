@@ -3,9 +3,9 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
+#include "../util/constants.h"
 #include "ClientState.h"
 #include "StreamBuffer.h"
-#include "constants.h"
 #include <queue>
 #include <sys/socket.h>
 

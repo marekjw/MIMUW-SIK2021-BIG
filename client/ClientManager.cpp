@@ -1,9 +1,9 @@
 
 #include "ClientManager.h"
-#include "CRC.h"
+#include "../util/CRC.h"
+#include "../util/err.h"
+#include "../util/util.h"
 #include "ClientState.h"
-#include "err.h"
-#include "util.h"
 #include <chrono>
 #include <netinet/in.h>
 #include <sys/socket.h>

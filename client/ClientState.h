@@ -3,7 +3,7 @@
 #ifndef CLIENT_STATE_H
 #define CLIENT_STATE_H
 
-#include "constants.h"
+#include "../util/constants.h"
 #include <iostream>
 #include <mutex>
 #include <pthread.h>

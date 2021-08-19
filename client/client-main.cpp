@@ -1,8 +1,8 @@
 
+#include "../util/err.h"
 #include "ClientManager.h"
 #include "ClientState.h"
 #include "StreamBuffer.h"
-#include "err.h"
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
