@@ -12,11 +12,12 @@
 #include <vector>
 
 void ClientManager::start() {
-  std::thread threads[3];
+  std::thread threads[4];
 
   threads[0] = std::thread(&ClientManager::server_to_gui, this);
   threads[1] = std::thread(&ClientManager::gui_to_client, this);
   threads[2] = std::thread(&ClientManager::client_to_server, this);
+  threads[3] = std::thread(&ClientState::dispatch_queue, &state, gui_socket);
 
   for (auto &t : threads)
     t.join();
@@ -103,7 +104,8 @@ void ClientManager::send_to_server() {
   std::copy(state.get_name().begin(), state.get_name().end(),
             std::back_inserter(message));
 
-  if (send(game_socket, message.data(), message.size(), 0) < 0)
+  if (sendto(game_socket, message.data(), message.size(), 0,
+             server_addr->ai_addr, server_addr->ai_addrlen) < 0)
     syserr("Could not send datagram to server");
 }
 

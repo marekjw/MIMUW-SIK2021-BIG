@@ -6,6 +6,7 @@
 #include "../util/constants.h"
 #include "ClientState.h"
 #include "StreamBuffer.h"
+#include <netdb.h>
 #include <queue>
 #include <sys/socket.h>
 
@@ -13,6 +14,8 @@ class ClientManager {
 private:
   ClientState state;
   int game_socket, gui_socket;
+  addrinfo *server_addr;
+
   unsigned char server_buffer[BUFFER_SIZE]{};
   StreamBuffer gui_buffer;
 
@@ -44,9 +47,9 @@ private:
 
 public:
   ClientManager(ClientState &state, StreamBuffer &gui_buffer, int game_socket,
-                int gui_socket)
+                int gui_socket, addrinfo *server_addr)
       : game_socket(game_socket), gui_socket(gui_socket), state(state),
-        gui_buffer(gui_buffer) {
+        gui_buffer(gui_buffer), server_addr(server_addr) {
     memset(&server_buffer, 0, BUFFER_SIZE);
   };
 

@@ -13,7 +13,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-
 static int setup_connection(const char *address, const char *port,
                             const addrinfo *hints, addrinfo **addr_ptr) {
   int sock, status;
@@ -28,10 +27,10 @@ static int setup_connection(const char *address, const char *port,
 
   if (sock < 0)
     syserr("Could not create socket");
-
-  if (connect(sock, addr->ai_addr, addr->ai_addrlen) < 0)
-    syserr("Could not connect socket");
-
+  if (hints->ai_protocol != IPPROTO_UDP) {
+    if (connect(sock, addr->ai_addr, addr->ai_addrlen) < 0)
+      syserr("Could not connect socket");
+  }
   return sock;
 }
 
@@ -107,7 +106,7 @@ int main(int argc, char **argv) {
 
   StreamBuffer gui_buffer{gui_socket};
 
-  ClientManager client{state, gui_buffer, game_socket, gui_socket};
+  ClientManager client{state, gui_buffer, game_socket, gui_socket, game_addrinfo};
 
   client.start();
 

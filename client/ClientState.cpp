@@ -1,5 +1,5 @@
 #include "ClientState.h"
-void ClientState::new_player(const std::string& new_player_name) {
+void ClientState::new_player(const std::string &new_player_name) {
   players_names.push_back(new_player_name);
 }
 void ClientState::game_over() {
@@ -7,7 +7,7 @@ void ClientState::game_over() {
   // TODO cos z numerem gierki
   players_names.clear(); // TODO czy na pewno?
 }
-void ClientState::update_direction(msg_from_gui event)  {
+void ClientState::update_direction(msg_from_gui event) {
 
   switch (event) {
   case LEFT_KEY_DOWN:
@@ -29,4 +29,23 @@ void ClientState::update_direction(msg_from_gui event)  {
   case UNKNOWN:
     break;
   }
+}
+void ClientState::dispatch_queue(int socket) {
+  // TODO
+}
+
+void ClientState::add_event(uint32_t event_no, Event event) {
+  // TODO
+}
+
+const std::string &ClientState::get_player_name(size_t index) {
+  return players_names[index];
+}
+
+void ClientState::append_player_names(std::string &res) {
+  // TODO
+}
+bool ClientState::valid_game_number(uint32_t game_number) {
+  // TODO
+  return false;
 }
