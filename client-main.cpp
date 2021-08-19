@@ -1,7 +1,7 @@
 
 #include "ClientManager.h"
+#include "ClientState.h"
 #include "StreamBuffer.h"
-#include "client-state.h"
 #include "err.h"
 #include <algorithm>
 #include <chrono>

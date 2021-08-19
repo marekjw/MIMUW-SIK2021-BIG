@@ -8,6 +8,7 @@
 #include <mutex>
 #include <pthread.h>
 #include <utility>
+#include <vector>
 
 class ClientState {
 private:
@@ -21,7 +22,9 @@ private:
   bool game_no_set;
   uint32_t game_no;
 
-  bool left_key_pressed, right_key_pressed;
+  bool left_key_pressed, right_key_pressed, game = true;
+
+  std::vector<std::string>players_names;
 
 public:
   explicit ClientState(std::string name, uint64_t session_id)
@@ -60,6 +63,10 @@ public:
     return false;
   }
 
+  [[nodiscard]] bool is_playing() const { return game; }
+  void game_over();
+  void play_game() { game = true; }
+
   void update_direction(msg_from_gui event) {
 
     switch (event) {
@@ -83,6 +90,8 @@ public:
       break;
     }
   }
+
+  void new_player(const std::string& new_player_name);
 };
 
 #endif

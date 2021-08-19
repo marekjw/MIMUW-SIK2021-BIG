@@ -3,9 +3,10 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
+#include "ClientState.h"
 #include "StreamBuffer.h"
-#include "client-state.h"
 #include "constants.h"
+#include <queue>
 #include <sys/socket.h>
 
 class ClientManager {
@@ -15,7 +16,9 @@ private:
   unsigned char server_buffer[BUFFER_SIZE]{};
   StreamBuffer gui_buffer;
 
-  void events_to_gui();
+  void server_to_gui();
+
+  void send_events_to_gui();
 
   [[noreturn]] void gui_to_client();
 
@@ -30,9 +33,15 @@ private:
 
   void parse_server_buffer(ssize_t size);
 
-  uint32_t parse_game_number();
+  void parse_event(ssize_t &counter, ssize_t size, bool &crc_ok);
 
-  void parse_event(ssize_t &counter, ssize_t size);
+  void parse_new_game_event(ssize_t start, ssize_t end);
+
+  void parse_pixel_event(ssize_t start, ssize_t end);
+
+  void parse_player_eliminated_event(ssize_t start, ssize_t end);
+
+  void handle_game_over_event();
 
 public:
   ClientManager(ClientState &state, StreamBuffer &gui_buffer, int game_socket,
