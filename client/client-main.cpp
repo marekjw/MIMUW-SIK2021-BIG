@@ -1,5 +1,6 @@
 
 #include "../util/err.h"
+#include "../util/util.h"
 #include "ClientManager.h"
 #include "ClientState.h"
 #include "StreamBuffer.h"
@@ -12,11 +13,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-bool is_name_valid(std::string &name) {
-  return name.size() <= 20 && std::all_of(name.begin(), name.end(), [](char c) {
-           return 33 <= c && c <= 126;
-         });
-}
 
 static int setup_connection(const char *address, const char *port,
                             const addrinfo *hints, addrinfo **addr_ptr) {
@@ -82,7 +78,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (!is_name_valid(name)) {
+  if (!util::is_name_valid(name)) {
     std::cerr << "Invalid player name" << std::endl;
     exit(1);
   }

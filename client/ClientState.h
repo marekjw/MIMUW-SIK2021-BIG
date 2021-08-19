@@ -4,6 +4,7 @@
 #define CLIENT_STATE_H
 
 #include "../util/constants.h"
+#include "Event.h"
 #include <iostream>
 #include <mutex>
 #include <pthread.h>
@@ -24,15 +25,15 @@ private:
 
   bool left_key_pressed, right_key_pressed, game = true;
 
-  std::vector<std::string>players_names;
+  std::vector<std::string> players_names;
+
+  // thread safety
 
 public:
   explicit ClientState(std::string name, uint64_t session_id)
       : name(std::move(name)), turn_direction(0), next_expected_event_no(0),
         next_event_to_send_no(0), session_id(session_id), game_no(0),
         game_no_set(false), left_key_pressed(false), right_key_pressed(false){};
-
-  void set_turn_direction(short turn) { turn_direction = turn; }
 
   [[nodiscard]] short get_turn_direction() const { return turn_direction; }
 
@@ -42,56 +43,54 @@ public:
     return next_expected_event_no;
   }
 
-  void set_session_id(int id) { session_id = id; }
-
   [[nodiscard]] uint64_t get_session_id() const { return session_id; }
 
   std::string &get_name() { return name; }
 
-  bool valid_game_number(uint32_t game_number) {
-    if (!game_no_set) {
-      game_no = game_number;
-      game_no_set = true;
-      return true;
-    }
-
-    if (game_number > game_no) {
-      game_no = game_number;
-      return true;
-    }
-
-    return false;
-  }
+  bool valid_game_number(uint32_t game_number);
 
   [[nodiscard]] bool is_playing() const { return game; }
   void game_over();
   void play_game() { game = true; }
 
-  void update_direction(msg_from_gui event) {
+  void update_direction(msg_from_gui event);
 
-    switch (event) {
-    case LEFT_KEY_DOWN:
-      left_key_pressed = true;
-      turn_direction = LEFT_DIRECTION;
-      break;
-    case RIGHT_KEY_DOWN:
-      right_key_pressed = true;
-      turn_direction = RIGHT_DIRECTION;
-      break;
-    case LEFT_KEY_UP:
-      left_key_pressed = false;
-      turn_direction = right_key_pressed ? RIGHT_DIRECTION : STRAIGHT;
-      break;
-    case RIGHT_KEY_UP:
-      right_key_pressed = false;
-      turn_direction = left_key_pressed ? LEFT_DIRECTION : STRAIGHT;
-      break;
-    case UNKNOWN:
-      break;
-    }
-  }
+  /**
+   * Adds new player name at the end of the players list
+   * Thread safe
+   * @param new_player_name
+   */
+  void new_player(const std::string &new_player_name);
 
-  void new_player(const std::string& new_player_name);
+  /**
+   * Starts sending messages from the queue to the specified socket
+   * @param socket
+   */
+  void dispatch_queue(int socket);
+
+  /**
+   * Adds event to the event queue
+   * is thread safe
+   * @param event
+   */
+  void add_event(uint32_t event_no, Event event);
+
+  /**
+   * is thread safe
+   * @param index
+   * @return the name of the index-th player
+   */
+  const std::string &get_player_name(size_t index);
+
+  /**
+   * Appends all the player names to the res string
+   *
+   * is thread safe
+   * @param res
+   */
+  void append_player_names(std::string &res);
 };
 
+
+// TODO remember to delete strings, cuz they're only pointers rn
 #endif

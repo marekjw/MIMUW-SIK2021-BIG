@@ -27,4 +27,9 @@ enum msg_from_gui {
 #define PLAYER_ELIMINATED_EVENT 2
 #define GAME_OVER_EVENT 3
 
+// lenghts of messages from server
+#define PIXEL_EVENT_LEN 9
+#define PLAYER_ELIMINATED_EVENT_LEN 1
+#define GAME_OVER_LEN 0
+
 #endif // CONSTANTS_H

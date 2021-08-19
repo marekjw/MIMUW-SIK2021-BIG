@@ -23,7 +23,6 @@ void ClientManager::start() {
 }
 
 void ClientManager::server_to_gui() {
-  // TODO
   while (true) {
 
     // read data from the server
@@ -36,7 +35,6 @@ void ClientManager::server_to_gui() {
       break;
 
     parse_server_buffer(size);
-    send_events_to_gui();
   }
 }
 
@@ -130,16 +128,11 @@ void ClientManager::parse_server_buffer(ssize_t size) {
 }
 
 void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
-  // TODO parse event from server, the buffer is already filled
   uint32_t len =
       ntohl(*(reinterpret_cast<uint32_t *>(server_buffer + counter)));
   if (len + CRC32LEN + LEN_LEN >= BUFFER_SIZE - counter) {
+    // len is invalid, as it doesn't fit in the buffer
     counter = size;
-    return;
-  }
-
-  if (len < MINIMUM_EVENT__LEN) {
-    counter += len + CRC32LEN + LEN_LEN;
     return;
   }
 
@@ -149,8 +142,14 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
       *(reinterpret_cast<uint32_t *>(server_buffer + counter + LEN_LEN + len)));
 
   if (crc != crc_received) {
+    // crc is invalid
     crc_ok = false;
     return;
+  }
+
+  if (len < MINIMUM_EVENT__LEN) {
+    // data has no sense
+    fatal("Received event makes no sense - it's length is too short");
   }
 
   counter += LEN_LEN;
@@ -165,22 +164,18 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
 
   switch (server_buffer[counter++]) {
   case NEW_GAME_EVENT:
-    parse_new_game_event(counter, end);
+    parse_new_game_event(counter, end, event_no);
     break;
   case PIXEL_EVENT:
-    parse_pixel_event(counter, end);
+    parse_pixel_event(counter, end, event_no);
     break;
   case PLAYER_ELIMINATED_EVENT:
-    parse_player_eliminated_event(counter, end);
+    parse_player_eliminated_event(counter, end, event_no);
     break;
   case GAME_OVER_EVENT:
-    handle_game_over_event();
+    handle_game_over_event(event_no);
   }
   counter = end + CRC32LEN;
-}
-
-void ClientManager::send_events_to_gui() {
-  // TODO
 }
 
 /**
@@ -189,25 +184,69 @@ void ClientManager::send_events_to_gui() {
  * @param start index of the start of the event_data field
  * @param end index of the end of the event_data_field
  */
-void ClientManager::parse_new_game_event(ssize_t start, ssize_t end) {
+void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
+                                         uint32_t event_no) {
   state.play_game(); // TODO numer gry
   uint32_t max_x = util::read_uint32_from_network_stream(server_buffer + start);
   start += 4;
   uint32_t max_y = util::read_uint32_from_network_stream(server_buffer + start);
   start += 4;
 
-  // TODO
+
+  // TODO a co z danymi bez sensu
+  std::string name;
+  while (server_buffer[start] != '\0' && start < end) {
+    for (; start < end && server_buffer[start] != ' ' &&
+           server_buffer[start] != '\0';
+         ++start) {
+      name.push_back(server_buffer[start]);
+    }
+    if (util::is_name_valid(name) && !name.empty()) {
+      state.new_player(name);
+    }
+  }
+
+  auto *data= new std::string {"NEW_GAME "};
+  data->append(std::to_string(max_x));
+  data->push_back(' ');
+  data->append(std::to_string(max_y));
+
+  state.append_player_names(*data);
+  state.add_event(event_no, {NEW_GAME_EVENT, data});
+
 }
-void ClientManager::parse_pixel_event(ssize_t start, ssize_t end) {
-  if (!state.is_playing())
-    return;
+void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
+                                      uint32_t event_no) {
+  if(start - end != PIXEL_EVENT_LEN)
+    fatal("Invalid data in PIXEL event");
+  // TODO validate data
+  uint32_t x, y;
+  unsigned char player_no = server_buffer[start++];
+  x = util::read_uint32_from_network_stream(server_buffer + start);
+  start += 4;
+  y = util::read_uint32_from_network_stream(server_buffer + start);
+  auto data = new std::string("PIXEL ");
+  data->append(std::to_string(x) + ' ');
+  data->append(std::to_string(y) + ' ');
+  data->append(state.get_player_name(player_no));
+
+  state.add_event(event_no, {PIXEL_EVENT, data});
+
 }
-void ClientManager::parse_player_eliminated_event(ssize_t start, ssize_t end) {
-  if (!state.is_playing())
-    return;
+void ClientManager::parse_player_eliminated_event(ssize_t start, ssize_t end,
+                                                  uint32_t event_no) {
+
+  if(start - end != PLAYER_ELIMINATED_EVENT_LEN)
+    fatal("Invalid data in PLAYER_ELIMINATED event");
+
+  // TODO validate data
+  auto data = new std::string("PLAYER_ELIMINATED ");
+  data->append(state.get_player_name(server_buffer[start]));
+
+  state.add_event(event_no, {PLAYER_ELIMINATED_EVENT, data});
 }
-void ClientManager::handle_game_over_event() {
-  state.game_over();
-  state.set_next_expected_event_no(0);
-  // TODO
+void ClientManager::handle_game_over_event(uint32_t event_no) {
+  // TODO validate data
+  auto data = new std::string();
+  state.add_event(event_no, {GAME_OVER_EVENT, data});
 }

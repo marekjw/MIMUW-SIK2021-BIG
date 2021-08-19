@@ -5,6 +5,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <string>
 #include <cstdint>
 class util {
 public:
@@ -16,5 +17,14 @@ public:
    * @return
    */
   static uint32_t read_uint32_from_network_stream(unsigned char *ptr);
+
+  /**
+   * Checks if the name is valid
+   * empty name is valid
+   * @param name
+   * @return true if the name is valid, false otherwise
+   */
+  static bool is_name_valid(std::string &name);
+
 };
 #endif // UTIL_H

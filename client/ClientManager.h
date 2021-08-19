@@ -18,8 +18,6 @@ private:
 
   void server_to_gui();
 
-  void send_events_to_gui();
-
   [[noreturn]] void gui_to_client();
 
   [[noreturn]] void client_to_server();
@@ -35,13 +33,14 @@ private:
 
   void parse_event(ssize_t &counter, ssize_t size, bool &crc_ok);
 
-  void parse_new_game_event(ssize_t start, ssize_t end);
+  void parse_new_game_event(ssize_t start, ssize_t end, uint32_t event_no);
 
-  void parse_pixel_event(ssize_t start, ssize_t end);
+  void parse_pixel_event(ssize_t start, ssize_t end, uint32_t event_no);
 
-  void parse_player_eliminated_event(ssize_t start, ssize_t end);
+  void parse_player_eliminated_event(ssize_t start, ssize_t end,
+                                     uint32_t event_no);
 
-  void handle_game_over_event();
+  void handle_game_over_event(uint32_t event_no);
 
 public:
   ClientManager(ClientState &state, StreamBuffer &gui_buffer, int game_socket,
