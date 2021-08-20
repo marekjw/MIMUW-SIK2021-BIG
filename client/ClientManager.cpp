@@ -12,13 +12,12 @@
 #include <vector>
 
 void ClientManager::start() {
-  std::thread threads[4];
-
-  threads[0] = std::thread(&ClientManager::server_to_gui, this);
-  threads[1] = std::thread(&ClientManager::gui_to_client, this);
-  threads[2] = std::thread(&ClientManager::client_to_server, this);
-  threads[3] = std::thread(&ClientState::dispatch_queue, &state, gui_socket);
-
+  std::thread threads[] = {
+      std::thread(&ClientManager::server_to_gui, this),
+      std::thread(&ClientManager::gui_to_client, this),
+      std::thread(&ClientManager::client_to_server, this),
+      std::thread(&ClientState::dispatch_queue, &state, gui_socket),
+  };
   for (auto &t : threads)
     t.join();
 }
@@ -194,7 +193,6 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
   uint32_t max_y = util::read_uint32_from_network_stream(server_buffer + start);
   start += 4;
 
-
   // TODO a co z danymi bez sensu
   std::string name;
   while (server_buffer[start] != '\0' && start < end) {
@@ -208,18 +206,17 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
     }
   }
 
-  auto *data= new std::string {"NEW_GAME "};
+  auto *data = new std::string{"NEW_GAME "};
   data->append(std::to_string(max_x));
   data->push_back(' ');
   data->append(std::to_string(max_y));
 
   state.append_player_names(*data);
   state.add_event(event_no, {NEW_GAME_EVENT, data});
-
 }
 void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
                                       uint32_t event_no) {
-  if(start - end != PIXEL_EVENT_LEN)
+  if (start - end != PIXEL_EVENT_LEN)
     fatal("Invalid data in PIXEL event");
   // TODO validate data
   uint32_t x, y;
@@ -233,12 +230,11 @@ void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
   data->append(state.get_player_name(player_no));
 
   state.add_event(event_no, {PIXEL_EVENT, data});
-
 }
 void ClientManager::parse_player_eliminated_event(ssize_t start, ssize_t end,
                                                   uint32_t event_no) {
 
-  if(start - end != PLAYER_ELIMINATED_EVENT_LEN)
+  if (start - end != PLAYER_ELIMINATED_EVENT_LEN)
     fatal("Invalid data in PLAYER_ELIMINATED event");
 
   // TODO validate data

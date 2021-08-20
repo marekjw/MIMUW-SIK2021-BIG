@@ -1,4 +1,5 @@
 #include "../util/err.h"
+#include "GameState.h"
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -56,4 +57,7 @@ int main(int argc, char **argv) {
   if (bind(server_socket, addr->ai_addr, addr->ai_addrlen) != 0) {
     syserr("bind error");
   }
+
+  GameState game;
+
 }
