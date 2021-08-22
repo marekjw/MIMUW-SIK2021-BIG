@@ -1,5 +1,7 @@
 #include "../util/err.h"
 #include "GameState.h"
+#include "ServerManager.h"
+#include "PLayerState.h"
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -58,6 +60,9 @@ int main(int argc, char **argv) {
     syserr("bind error");
   }
 
-  GameState game;
+  GameState game{width, height, turning_speed, round_per_sec};
 
+  ServerManager server{game, server_socket};
+
+  server.start();
 }

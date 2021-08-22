@@ -5,6 +5,7 @@
 
 #include "../util/constants.h"
 #include "Event.h"
+#include <atomic>
 #include <condition_variable>
 #include <iostream>
 #include <map>
@@ -16,7 +17,7 @@
 class ClientState {
 private:
   std::string name;
-  short turn_direction;
+  std::atomic<short> turn_direction;
   uint32_t next_expected_event_no; // number of the next expected event to be
                                    // received from the server
   uint32_t next_event_to_send_no;  // number of the next event to send to gui
@@ -30,7 +31,7 @@ private:
   std::vector<std::string> players_names;
 
   // events queue
-  std::map<uint32_t, Event>queue;
+  std::map<uint32_t, Event> queue;
 
   // thread safety
   std::mutex queue_mutex;
@@ -103,7 +104,7 @@ public:
    * @param event - an event to be sent
    * @param socket - socket over which an event is to be sent
    */
-   static void send_event_to_gui(Event event, int socket);
+  static void send_event_to_gui(Event event, int socket);
 };
 
 // TODO remember to delete strings, cuz they're only pointers rn

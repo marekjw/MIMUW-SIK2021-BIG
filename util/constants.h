@@ -32,4 +32,6 @@ enum msg_from_gui {
 #define PLAYER_ELIMINATED_EVENT_LEN 1
 #define GAME_OVER_LEN 0
 
+#define MAX_CLIENT_DATAGRAM_LEN 33
+
 #endif // CONSTANTS_H
