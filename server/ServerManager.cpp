@@ -1,5 +1,6 @@
 #include "ServerManager.h"
 
+#include "../util/err.h"
 #include "Datagram.h"
 #include "Events/GameOverEvent.h"
 #include "Events/PixelEvent.h"
@@ -38,21 +39,30 @@ void ServerManager::start() {
     auto bytes_read = recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
                                (struct sockaddr *)&from, &from_len);
 
-    if (bytes_read < 0 || MAX_CLIENT_DATAGRAM_LEN < bytes_read)
+    if (bytes_read < 0) {
+      warning("Could not read datagram");
       continue;
+    }
+    if (MAX_CLIENT_DATAGRAM_LEN < bytes_read) {
+      warning("Datagram is too long");
+      continue;
+    }
 
     Datagram datagram{buffer, bytes_read};
 
-    if (datagram.invalid_name())
+    if (datagram.invalid_name()) {
       continue;
-
-    if (state.is_game_on() || datagram.get_name().empty()) {
-      state.add_spectator(datagram, from);
-    } else {
-      state.update_player(datagram, from);
     }
 
-    send_events_to(datagram.get_next_expected_event_no(), &from);
+    if (state.is_game_on() || datagram.get_name().empty()) {
+      if (state.update_spectator(datagram, from)) {
+        send_events_to(datagram.get_next_expected_event_no(), &from);
+      }
+    } else {
+      if (state.update_player(datagram, from)) {
+        send_events_to(datagram.get_next_expected_event_no(), &from);
+      }
+    }
   }
 }
 
@@ -111,8 +121,12 @@ void ServerManager::send_events_queue() {
 void ServerManager::send_datagram(std::vector<unsigned char> &msg,
                                   const sockaddr_in *dest) {
 
-  sendto(sockfd, msg.data(), msg.size(), 0, (struct sockaddr *)dest,
-         sizeof *dest);
+  auto res = sendto(sockfd, msg.data(), msg.size(), 0, (struct sockaddr *)dest,
+                    sizeof *dest);
+
+  if (res < 0) {
+    warning("Could not send datagram");
+  }
 
   msg.clear();
   msg.push_back(htonl(state.get_game_id()));

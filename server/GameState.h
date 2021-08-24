@@ -12,6 +12,8 @@
 
 class GameState {
 private:
+  std::vector<std::vector<bool>>pixels{{}};
+
   int width, height, turning_speed, round_per_sec;
   std::vector<PLayerState> players_sorted;
   uint32_t game_id;
@@ -49,7 +51,7 @@ public:
 
   /**
    * The given pixel becomes invalid
-   * @param pixel
+   * @param pixel - a valid pixel
    */
   void eat_pixel(std::pair<int, int> pixel);
 
@@ -68,16 +70,18 @@ public:
   /**
    * Thread safe
    * @param datagram
-   * @param address
+   * @param address - is updated to point at the most current one
+   * @return true if the specator should not be ignored, false otherwise
    */
-  void add_spectator(const Datagram &datagram, const sockaddr_in &address);
+  bool update_spectator(const Datagram &datagram, const sockaddr_in &address);
 
   /**
    * Thread safe
    * @param datagram
    * @param address
+   * @return true if the player should not be ignored, false otherwise
    */
-  void update_player(const Datagram &datagram, const sockaddr_in &address);
+  bool update_player(const Datagram &datagram, const sockaddr_in &address);
 
   void kill_player(PLayerState &player);
 
