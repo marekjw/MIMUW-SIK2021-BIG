@@ -2,7 +2,8 @@
 #define GAMESTATE_H
 
 #include "Datagram.h"
-#include "PLayerState.h"
+#include "People/PLayerState.h"
+#include "People/Person.h"
 #include <map>
 #include <mutex>
 #include <netinet/in.h>
@@ -17,7 +18,7 @@ private:
 
   std::map<std::pair<uint64_t, int>, PLayerState *> players;
 
-  std::map<std::pair<uint64_t, int>, struct sockaddr_in> spectators;
+  std::map<std::pair<uint64_t, int>, Person> spectators;
 
   std::mutex map_mutex;
 
@@ -86,12 +87,14 @@ public:
     return players;
   };
 
-  const std::map<std::pair<uint64_t, int>, struct sockaddr_in> &
+  const std::map<std::pair<uint64_t, int>, Person> &
   get_spectators_map() {
     return spectators;
   }
 
   void reset();
+
+  void disconnect_inactive_ones();
 };
 
 #endif // GAMESTATE_H

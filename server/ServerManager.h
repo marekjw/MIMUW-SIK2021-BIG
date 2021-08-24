@@ -4,7 +4,9 @@
 #include "../util/constants.h"
 #include "Events/Event.h"
 #include "GameState.h"
+#include <cstdio>
 #include <condition_variable>
+#include <iostream>
 #include <mutex>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -15,13 +17,12 @@ class ServerManager {
 private:
   int sockfd;
 
-  unsigned char buffer[BUFFER_SIZE];
+  unsigned char buffer[BUFFER_SIZE]{};
 
   GameState &state;
 
   // events management
   std::mutex event_mutex;
-  std::condition_variable cv;
   std::vector<Event> events;
 
   uint32_t next_event_to_send;
@@ -44,7 +45,7 @@ private:
   /**
    * Adds event to the events vector
    */
-  void add_event(const Event& event);
+  void add_event(const Event &event);
 
   uint32_t round_time; // round time in miliseconds
 
@@ -61,7 +62,6 @@ private:
    */
   void send_datagram(std::vector<unsigned char> &msg, const sockaddr_in *dest);
 
-
   /**
    * Send events, starting from next_expected ... up until the most recent one
    * @param next_expected_event
@@ -70,11 +70,13 @@ private:
   void send_events_to(uint32_t next_expected_event,
                       const sockaddr_in *destination);
 
-
-  void manage_inactive_players();
 public:
-  ServerManager(GameState &gameState, int sockfd)
-      : sockfd(sockfd), state(gameState), next_event_to_send(0) {}
+  ServerManager(GameState &gameState, int sockfd, float rounds_per_sec)
+      : sockfd(sockfd), state(gameState), next_event_to_send(0) {
+    round_time = ((float)1000 / rounds_per_sec);
+
+    printf("Server created, round time in miliseconds: %d\n", round_time);
+  }
 
   /**
    * Start the server loop.

@@ -20,7 +20,7 @@ void ServerManager::start() {
   while (true) {
     auto wake_up_at = std::chrono::steady_clock::now() +
                       std::chrono::milliseconds(round_time);
-    // TODO disconnect inactives
+    state.disconnect_inactive_ones();
     if (state.ready_players() >= MIN_AMOUNT_OF_PLAYERS) {
       state.set_up_new_game();
       game_loop();
@@ -61,7 +61,7 @@ void ServerManager::game_loop() {
     auto wake_up_at = std::chrono::steady_clock::now() +
                       std::chrono::milliseconds(round_time);
 
-    manage_inactive_players();
+    state.disconnect_inactive_ones();
 
     for (auto &player : state.get_players()) {
       player.update_direction();
@@ -103,7 +103,7 @@ void ServerManager::send_events_queue() {
     send_events_to(next_event_to_send, &it.second->get_address());
 
   for (auto it : state.get_spectators_map())
-    send_events_to(next_event_to_send, &it.second);
+    send_events_to(next_event_to_send, &it.second.get_address());
 
   lock.unlock();
 }

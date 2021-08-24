@@ -1,7 +1,7 @@
 #include "../util/err.h"
 #include "GameState.h"
+#include "People/PLayerState.h"
 #include "ServerManager.h"
-#include "PLayerState.h"
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
   GameState game{width, height, turning_speed, round_per_sec};
 
-  ServerManager server{game, server_socket};
+  ServerManager server{game, server_socket, (float)round_per_sec};
 
   server.start();
 }

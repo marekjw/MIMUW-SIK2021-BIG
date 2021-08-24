@@ -1,7 +1,3 @@
-//
-// Created by marek on 22/08/2021.
-//
-
 #include "PLayerState.h"
 void PLayerState::update_direction() {
   switch (turn_direction) {
