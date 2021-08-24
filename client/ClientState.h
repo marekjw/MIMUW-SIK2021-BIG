@@ -64,7 +64,7 @@ public:
   void update_direction(msg_from_gui event);
 
   /**
-   * Adds new player name at the end of the players list
+   * Adds new player name at the end of the players_sorted list
    * Thread safe
    * @param new_player_name
    */

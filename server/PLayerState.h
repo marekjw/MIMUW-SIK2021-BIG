@@ -4,6 +4,7 @@
 
 #include "../util/constants.h"
 #include <atomic>
+#include <netinet/in.h>
 #include <utility>
 
 class PLayerState {
@@ -12,6 +13,8 @@ private:
   // accesed only in ServerManager game_loop
   int x, y;
   static int turning_speed;
+
+  sockaddr_in address;
 
   const int number;
 
@@ -38,6 +41,12 @@ public:
   [[nodiscard]] int get_number() const { return number; }
 
   std::pair<int, int> get_position();
+
+  const sockaddr_in &get_address() { return address; }
+
+  void kill();
+
+  uint64_t get_last_activity_timestamp();
 };
 
 #endif

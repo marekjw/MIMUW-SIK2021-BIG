@@ -33,5 +33,9 @@ enum msg_from_gui {
 #define GAME_OVER_LEN 0
 
 #define MAX_CLIENT_DATAGRAM_LEN 33
+#define MAX_DATA_FROM_SERVER_LEN 550
+#define MIN_AMOUNT_OF_PLAYERS 2
+
+#define MILISECOND_IN_2_SECONDS 2000
 
 #endif // CONSTANTS_H

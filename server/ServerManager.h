@@ -6,6 +6,7 @@
 #include "GameState.h"
 #include <condition_variable>
 #include <mutex>
+#include <netinet/in.h>
 #include <pthread.h>
 #include <thread>
 #include <vector>
@@ -14,10 +15,9 @@ class ServerManager {
 private:
   int sockfd;
 
-  char buffer[BUFFER_SIZE];
+  unsigned char buffer[BUFFER_SIZE];
 
   GameState &state;
-
 
   // events management
   std::mutex event_mutex;
@@ -35,35 +35,53 @@ private:
   void game_loop();
 
   /**
-   * Thread worker that sends new events to all the clients
-   * In other words, dispathes the events queue
-   */
-  [[noreturn]] void send_events_queue();
-
-  /**
    * Listens for incoming datagrams.
-   * Updates players data
+   * Updates players_sorted data
+   * Only reads the events vector
    */
   [[noreturn]] void listener();
 
-
-  void add_event(Event event);
+  /**
+   * Adds event to the events vector
+   */
+  void add_event(const Event& event);
 
   uint32_t round_time; // round time in miliseconds
 
-  void send_event_to_all(Event *event_pointer);
+  /**
+   * Sends all the new events to all the players_sorted.
+   * Only reads the events vector
+   */
+  void send_events_queue();
 
+  /**
+   * Send the datagram to everyone.
+   * Resets the msg vector (clears it, and inserts the game id to it)
+   * @param msg
+   */
+  void send_datagram(std::vector<unsigned char> &msg, const sockaddr_in *dest);
+
+
+  /**
+   * Send events, starting from next_expected ... up until the most recent one
+   * @param next_expected_event
+   * @param destination
+   */
+  void send_events_to(uint32_t next_expected_event,
+                      const sockaddr_in *destination);
+
+
+  void manage_inactive_players();
 public:
   ServerManager(GameState &gameState, int sockfd)
       : sockfd(sockfd), state(gameState), next_event_to_send(0) {}
 
   /**
    * Start the server loop.
-   * Reads players data.
+   * Reads players_sorted data.
    * Updates events.
    */
   void start();
-
 };
 
 #endif // SERVERMANAGER_H
