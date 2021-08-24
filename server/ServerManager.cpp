@@ -32,10 +32,11 @@ void ServerManager::start() {
 }
 
 [[noreturn]] void ServerManager::listener() {
-  struct sockaddr_in from {};
-  socklen_t from_len;
+  struct sockaddr_storage from {};
+  socklen_t from_len = sizeof from;
 
   while (true) {
+    // SOCKET: RECEIVNING THE DATA
     auto bytes_read = recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
                                (struct sockaddr *)&from, &from_len);
 
@@ -55,11 +56,11 @@ void ServerManager::start() {
     }
 
     if (state.is_game_on() || datagram.get_name().empty()) {
-      if (state.update_spectator(datagram, from)) {
+      if (state.update_spectator(datagram, &from)) {
         send_events_to(datagram.get_next_expected_event_no(), &from);
       }
     } else {
-      if (state.update_player(datagram, from)) {
+      if (state.update_player(datagram, &from)) {
         send_events_to(datagram.get_next_expected_event_no(), &from);
       }
     }
@@ -119,8 +120,9 @@ void ServerManager::send_events_queue() {
 }
 
 void ServerManager::send_datagram(std::vector<unsigned char> &msg,
-                                  const sockaddr_in *dest) {
+                                  const sockaddr_storage *dest) {
 
+  // SOCKET: SENDING THE DATA
   auto res = sendto(sockfd, msg.data(), msg.size(), 0, (struct sockaddr *)dest,
                     sizeof *dest);
 
@@ -133,7 +135,7 @@ void ServerManager::send_datagram(std::vector<unsigned char> &msg,
 }
 
 void ServerManager::send_events_to(uint32_t next_expected_event,
-                                   const sockaddr_in *destination) {
+                                   const sockaddr_storage *destination) {
   std::vector<unsigned char> msg;
   msg.push_back(htonl(state.get_game_id()));
   for (auto i = next_expected_event; i < events.size(); ++i) {

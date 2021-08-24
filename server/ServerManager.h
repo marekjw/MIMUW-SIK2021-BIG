@@ -60,7 +60,8 @@ private:
    * Resets the msg vector (clears it, and inserts the game id to it)
    * @param msg
    */
-  void send_datagram(std::vector<unsigned char> &msg, const sockaddr_in *dest);
+  void send_datagram(std::vector<unsigned char> &msg,
+                     const sockaddr_storage *dest);
 
   /**
    * Send events, starting from next_expected ... up until the most recent one
@@ -68,7 +69,7 @@ private:
    * @param destination
    */
   void send_events_to(uint32_t next_expected_event,
-                      const sockaddr_in *destination);
+                      const sockaddr_storage *destination);
 
 public:
   ServerManager(GameState &gameState, int sockfd, float rounds_per_sec)

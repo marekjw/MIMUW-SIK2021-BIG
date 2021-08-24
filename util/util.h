@@ -6,7 +6,10 @@
 #define UTIL_H
 
 #include <string>
+#include <arpa/inet.h>
 #include <cstdint>
+#include <netinet/in.h>
+
 class util {
 public:
   /**
@@ -25,6 +28,8 @@ public:
    * @return true if the name is valid, false otherwise
    */
   static bool is_name_valid(std::string &name);
+
+  static bool get_ip_str(const sockaddr_storage *from, char *s, int &port);
 
 };
 #endif // UTIL_H

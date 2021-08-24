@@ -12,22 +12,25 @@
 
 class GameState {
 private:
-  std::vector<std::vector<bool>>pixels{{}};
+  std::vector<std::vector<bool>> pixels{{}};
 
-  int width, height, turning_speed, round_per_sec;
+  int width, height, turning_speed, round_per_sec, ready_players_no;
   std::vector<PLayerState> players_sorted;
   uint32_t game_id;
 
-  std::map<std::pair<uint64_t, int>, PLayerState *> players;
+  bool the_game_is_on;
 
-  std::map<std::pair<uint64_t, int>, Person> spectators;
+  std::map<std::pair<std::string, int>, PLayerState *> players;
 
-  std::mutex map_mutex;
+  std::map<std::pair<std::string, int>, Person> spectators;
+
+  std::mutex map_mutex, game_on_mutex;
 
 public:
   GameState(int width, int height, int turning_speed, int rounds_per_sec)
       : width(width), height(height), turning_speed(turning_speed),
-        round_per_sec(rounds_per_sec) {
+        round_per_sec(rounds_per_sec), ready_players_no(0),
+        the_game_is_on(false) {
     PLayerState::initialize(turning_speed);
   }
 
@@ -70,10 +73,10 @@ public:
   /**
    * Thread safe
    * @param datagram
-   * @param address - is updated to point at the most current one
+   * @param from - is updated to point at the most current one
    * @return true if the specator should not be ignored, false otherwise
    */
-  bool update_spectator(const Datagram &datagram, const sockaddr_in &address);
+  bool update_spectator(const Datagram &datagram, const sockaddr_storage *from);
 
   /**
    * Thread safe
@@ -81,18 +84,18 @@ public:
    * @param address
    * @return true if the player should not be ignored, false otherwise
    */
-  bool update_player(const Datagram &datagram, const sockaddr_in &address);
+  bool update_player(const Datagram &datagram, const sockaddr_storage *address);
 
   void kill_player(PLayerState &player);
 
   std::mutex &get_map_mutex() { return map_mutex; }
 
-  const std::map<std::pair<uint64_t, int>, PLayerState *> &get_players_map() {
+  const std::map<std::pair<std::string, int>, PLayerState *> &
+  get_players_map() {
     return players;
   };
 
-  const std::map<std::pair<uint64_t, int>, Person> &
-  get_spectators_map() {
+  const std::map<std::pair<std::string, int>, Person> &get_spectators_map() {
     return spectators;
   }
 
