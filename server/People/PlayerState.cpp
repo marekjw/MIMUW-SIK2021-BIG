@@ -1,5 +1,5 @@
-#include "PLayerState.h"
-void PLayerState::update_direction() {
+#include "PlayerState.h"
+void PlayerState::update_direction() {
   switch (turn_direction) {
   case LEFT_DIRECTION:
     direction -= turning_speed;
@@ -9,6 +9,7 @@ void PLayerState::update_direction() {
     break;
   }
 }
-std::pair<int, int> PLayerState::get_position() {
+std::pair<int, int> PlayerState::get_position() {
   return std::pair<int, int>(x ,y);
 }
+bool PlayerState::is_alive() const { return alive;}

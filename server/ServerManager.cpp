@@ -75,6 +75,9 @@ void ServerManager::game_loop() {
     state.disconnect_inactive_ones();
 
     for (auto &player : state.get_players()) {
+      if (!player.is_alive())
+        continue;
+
       player.update_direction();
       if (!player.move())
         continue;
@@ -110,11 +113,11 @@ void ServerManager::send_events_queue() {
   std::unique_lock<std::mutex> lock(state.get_map_mutex());
   lock.lock();
 
-  for (auto it : state.get_players_map())
+  for (auto &it : state.get_players_map())
     send_events_to(next_event_to_send, &it.second->get_address());
 
-  for (auto it : state.get_spectators_map())
-    send_events_to(next_event_to_send, &it.second.get_address());
+  for (auto &it : state.get_spectators_map())
+    send_events_to(next_event_to_send, &(it.second.get_address()));
 
   lock.unlock();
 }

@@ -1,9 +1,28 @@
 #include "GameState.h"
 #include "../util/util.h"
 
+#include <algorithm>
 #include <arpa/inet.h>
 void GameState::set_up_new_game() {
-  // TODO
+  map_mutex.lock();
+  game_on_mutex.lock();
+
+  game_id = rng();
+  the_game_is_on = true;
+
+  players_alive_no = players_sorted.size();
+
+  std::sort(players_sorted.begin(), players_sorted.end(),
+            [](const PlayerState &a, const PlayerState &b) {
+              return a.get_name() < b.get_name();
+            });
+
+  for (auto &player : players_sorted) {
+    *(player.get_map_pointer()) = &player;
+  }
+
+  game_on_mutex.unlock();
+  map_mutex.unlock();
 }
 
 bool GameState::is_game_on() {
@@ -79,7 +98,8 @@ bool GameState::update_player(const Datagram &datagram,
     }
 
     players_sorted.emplace_back(*from, 0, datagram);
-    players.insert({{res, port}, &players_sorted.back()});
+    auto it = players.insert({{res, port}, &players_sorted.back()});
+    players_sorted.back().set_map_pointer(&(it.first->second));
 
     if (datagram.get_turn_direction() != STRAIGHT) {
       players_sorted.back().make_ready();
@@ -114,4 +134,62 @@ bool GameState::update_player(const Datagram &datagram,
   }
 
   return false;
+}
+int GameState::ready_players() {
+  game_on_mutex.lock();
+  auto res = ready_players_no;
+  game_on_mutex.unlock();
+  return res;
+}
+int GameState::players_alive() const { return players_alive_no; }
+
+void GameState::kill_player(PlayerState &player) {
+  if (!player.is_alive())
+    return;
+
+  player.kill();
+  --players_alive_no;
+}
+
+void GameState::reset() {
+  map_mutex.lock();
+  game_on_mutex.lock();
+
+  players_sorted.clear();
+  players.clear();
+  spectators.clear();
+
+  ready_players_no = 0;
+  players_alive_no = 0;
+  the_game_is_on = false;
+
+  for (auto &column : pixels)
+    column.clear();
+  pixels.clear();
+  pixels = std::vector<std::vector<bool>>(width, std::vector<bool>(height));
+
+  game_on_mutex.unlock();
+  map_mutex.unlock();
+}
+
+void GameState::disconnect_inactive_ones() {
+  map_mutex.lock();
+  for (auto it = players.cbegin(); it != players.cend();) {
+    if (it->second->should_disconnect()) {
+      it->second->disconnect();
+      it = players.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  for (auto it = spectators.cbegin(); it != spectators.cend();) {
+    if (it->second.should_disconnect()) {
+      it = spectators.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  map_mutex.unlock();
 }

@@ -1,6 +1,6 @@
 #include "../util/err.h"
 #include "GameState.h"
-#include "People/PLayerState.h"
+#include "People/PlayerState.h"
 #include "ServerManager.h"
 #include <cstdlib>
 #include <cstring>
@@ -60,7 +60,9 @@ int main(int argc, char **argv) {
     syserr("bind error");
   }
 
-  GameState game{width, height, turning_speed, round_per_sec};
+  Random rand{seed};
+
+  GameState game{width, height, turning_speed, round_per_sec, rand};
 
   ServerManager server{game, server_socket, (float)round_per_sec};
 

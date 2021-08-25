@@ -1,9 +1,10 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
+#include "../util/Random.h"
 #include "Datagram.h"
-#include "People/PLayerState.h"
 #include "People/Person.h"
+#include "People/PlayerState.h"
 #include <map>
 #include <mutex>
 #include <netinet/in.h>
@@ -12,33 +13,38 @@
 
 class GameState {
 private:
-  std::vector<std::vector<bool>> pixels{{}};
+  std::vector<std::vector<bool>> pixels;
 
   int width, height, turning_speed, round_per_sec, ready_players_no;
-  std::vector<PLayerState> players_sorted;
-  uint32_t game_id;
+  std::vector<PlayerState> players_sorted;
+  uint32_t game_id{};
 
   bool the_game_is_on;
 
-  std::map<std::pair<std::string, int>, PLayerState *> players;
+  std::map<std::pair<std::string, int>, PlayerState *> players;
 
   std::map<std::pair<std::string, int>, Person> spectators;
 
   std::mutex map_mutex, game_on_mutex;
 
+  int players_alive_no;
+
+  Random &rng;
+
 public:
-  GameState(int width, int height, int turning_speed, int rounds_per_sec)
+  GameState(int width, int height, int turning_speed, int rounds_per_sec,
+            Random &random)
       : width(width), height(height), turning_speed(turning_speed),
         round_per_sec(rounds_per_sec), ready_players_no(0),
-        the_game_is_on(false) {
-    PLayerState::initialize(turning_speed);
+        the_game_is_on(false), players_alive_no(0), rng(random) {
+    PlayerState::initialize(turning_speed);
+    pixels = std::vector<std::vector<bool>>(width, std::vector<bool>(height));
   }
-
-  [[nodiscard]] int get_rounds_per_sec() const { return round_per_sec; }
 
   /**
    * Returns the number of ready players_sorted
    * - that is players_sorted, who sent turn_direction /= 0 at least once
+   * (thread safe)
    * @return
    */
   int ready_players();
@@ -48,7 +54,7 @@ public:
    * Is not thread safe
    * @return reference to the players_sorted vector
    */
-  std::vector<PLayerState> &get_players() { return players_sorted; }
+  std::vector<PlayerState> &get_players() { return players_sorted; }
 
   bool pixel_valid(std::pair<int, int> position);
 
@@ -61,7 +67,7 @@ public:
   /**
    * @return number of alive players_sorted
    */
-  int players_alive() const;
+  [[nodiscard]] int players_alive() const;
 
   bool is_game_on();
 
@@ -86,11 +92,11 @@ public:
    */
   bool update_player(const Datagram &datagram, const sockaddr_storage *address);
 
-  void kill_player(PLayerState &player);
+  void kill_player(PlayerState &player);
 
   std::mutex &get_map_mutex() { return map_mutex; }
 
-  const std::map<std::pair<std::string, int>, PLayerState *> &
+  const std::map<std::pair<std::string, int>, PlayerState *> &
   get_players_map() {
     return players;
   };
