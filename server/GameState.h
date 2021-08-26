@@ -32,6 +32,10 @@ private:
 
   Random &rng;
 
+  bool update_spectator_(const Datagram &datagram, const sockaddr_storage *from);
+
+  bool update_player_(const Datagram &datagram, const sockaddr_storage *address);
+
 public:
   GameState(int width, int height, int turning_speed, Random &random)
       : max_x(width), max_y(height), ready_players_no(0),

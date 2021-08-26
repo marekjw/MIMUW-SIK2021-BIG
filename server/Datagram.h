@@ -28,6 +28,7 @@ public:
   [[nodiscard]] const std::string &get_name() const { return name; }
 
   [[nodiscard]] uint64_t get_session_id() const { return session_id; }
+  bool invalid_crc();
 };
 
 #endif // DATAGRAM_H

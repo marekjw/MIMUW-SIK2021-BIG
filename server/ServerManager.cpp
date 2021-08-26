@@ -26,7 +26,8 @@ void ServerManager::start() {
     if (state.can_start_game()) {
       state.set_up_new_game();
 
-      add_event(NewGameEvent(state.get_players(), state.get_max_x(), state.get_max_y()));
+      add_event(NewGameEvent(state.get_players(), state.get_max_x(),
+                             state.get_max_y()));
 
       for (auto &player : state.get_players()) {
         if (player.is_alive()) {
@@ -57,10 +58,13 @@ void ServerManager::start() {
   struct sockaddr_storage from {};
   socklen_t from_len = sizeof from;
 
+  std::cerr<<"Starting to listen\n";
   while (true) {
     // SOCKET: RECEIVNING THE DATA
     auto bytes_read = recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
                                (struct sockaddr *)&from, &from_len);
+
+    std::cerr << "New Datagram received\n";
 
     if (bytes_read < 0) {
       warning("Could not read datagram");
@@ -73,7 +77,7 @@ void ServerManager::start() {
 
     Datagram datagram{buffer, bytes_read};
 
-    if (datagram.invalid_name()) {
+    if (datagram.invalid_crc() || datagram.invalid_name()) {
       continue;
     }
 

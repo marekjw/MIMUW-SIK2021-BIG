@@ -13,3 +13,4 @@ Datagram::Datagram(unsigned char *buffer, long len) {
     name.push_back((char)buffer[i]);
   }
 }
+bool Datagram::invalid_crc() { return false; }

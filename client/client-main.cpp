@@ -17,7 +17,8 @@ static int setup_connection(const char *address, const char *port,
                             const addrinfo *hints, addrinfo **addr_ptr) {
   int sock, status;
   if ((status = getaddrinfo(address, port, hints, addr_ptr)) < 0) {
-    fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
+    fprintf(stderr, "getaddrinfo (%s) error: %s\n", address,
+            gai_strerror(status));
     exit(1);
   }
 
@@ -93,20 +94,19 @@ int main(int argc, char **argv) {
   int game_socket, gui_socket;
 
   hints.ai_protocol = IPPROTO_UDP;
-  // hints.ai_socktype = SOCK_STREAM;
   game_socket = setup_connection(game_address.data(), game_port.data(), &hints,
                                  &game_addrinfo);
 
   std::cout << "GAME OK\n";
 
   hints.ai_protocol = IPPROTO_TCP;
-  // hints.ai_socktype = SOCK_DGRAM;
   gui_socket = setup_connection(gui_address.data(), gui_port.data(), &hints,
                                 &gui_addrinfo);
 
   StreamBuffer gui_buffer{gui_socket};
 
-  ClientManager client{state, gui_buffer, game_socket, gui_socket, game_addrinfo};
+  ClientManager client{state, gui_buffer, game_socket, gui_socket,
+                       game_addrinfo};
 
   client.start();
 

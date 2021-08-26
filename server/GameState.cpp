@@ -70,6 +70,7 @@ bool GameState::update_spectator(const Datagram &datagram,
 
   if (ptr == spectators.end()) {
     // create a new spectator
+    std::cerr<<"New specator\n";
     spectators.insert({{res, port}, Person{*from, datagram.get_session_id()}});
     return true;
   } else {
@@ -103,9 +104,11 @@ bool GameState::update_player(const Datagram &datagram,
 
   if (ptr == players.end()) {
     if (MAX_PLAYERS <= players.size()) {
+      std::cerr << "Cannot add new player - player limit would be exceeded\n";
       return false;
     }
 
+    std::cerr << "Adding new player: " << datagram.get_name() << std::endl;
     players_sorted.emplace_back(*from, datagram);
     auto it = players.insert({{res, port}, &players_sorted.back()});
     players_sorted.back().set_map_pointer(&(it.first->second));
@@ -144,6 +147,17 @@ bool GameState::update_player(const Datagram &datagram,
 
   return false;
 }
+
+
+bool GameState::update_spectator_(const Datagram &datagram,
+                                  const sockaddr_storage *from) {
+  return false;
+}
+bool GameState::update_player_(const Datagram &datagram,
+                               const sockaddr_storage *address) {
+  return false;
+}
+
 unsigned long GameState::ready_players() {
   game_on_mutex.lock();
   auto res = ready_players_no;
@@ -216,5 +230,6 @@ bool GameState::can_start_game() {
   clients_mutex.unlock();
   return res;
 }
-uint32_t GameState::get_max_x() const { return max_x;}
-uint32_t GameState::get_max_y() const { return max_y;}
+uint32_t GameState::get_max_x() const { return max_x; }
+uint32_t GameState::get_max_y() const { return max_y; }
+

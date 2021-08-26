@@ -109,9 +109,6 @@ void ClientManager::send_to_server() {
 }
 
 ClientManager::~ClientManager() {
-  if (close(game_socket) < 0)
-    syserr("Cannot close game socket");
-
   if (close(gui_socket) < 0)
     syserr("Cannot close gui socket");
 }
