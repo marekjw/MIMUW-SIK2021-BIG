@@ -23,13 +23,13 @@ public:
    */
   void stamp();
 
-  bool should_disconnect() const;
+  [[nodiscard]] bool should_disconnect() const;
 
-  [[nodiscard]] uint64_t get_session_id() const;
+  [[nodiscard]] uint64_t get_session_id() const { return session_id; }
 
   void update_session_id(uint64_t id) { session_id = id; }
 
-  const sockaddr_storage &get_address() const { return address; }
+  [[nodiscard]] const sockaddr_storage &get_address() const { return address; }
 };
 
 #endif // PERSON_H
