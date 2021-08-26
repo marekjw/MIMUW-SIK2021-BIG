@@ -26,7 +26,7 @@ void ServerManager::start() {
     if (state.can_start_game()) {
       state.set_up_new_game();
 
-      add_event(NewGameEvent(state.get_players()));
+      add_event(NewGameEvent(state.get_players(), state.get_max_x(), state.get_max_y()));
 
       for (auto &player : state.get_players()) {
         if (player.is_alive()) {
@@ -132,6 +132,8 @@ void ServerManager::add_event(const Event &event) {
 }
 
 void ServerManager::send_events_queue() {
+  // TODO może zmienic??
+
   std::unique_lock<std::mutex> lock(state.get_map_mutex());
   lock.lock();
 

@@ -1,7 +1,6 @@
 #include "util.h"
 #include "err.h"
 #include <algorithm>
-#include <cstring>
 #include <netinet/in.h>
 
 uint32_t util::read_uint32_from_network_stream(unsigned char *ptr) {
@@ -38,13 +37,4 @@ bool util::get_ip_str(const sockaddr_storage *from, char *res, int &port) {
     return false;
   }
   return true;
-}
-template <typename T>
-std::vector<unsigned char> &util::serialize(std::vector<unsigned char> &v,
-                                            const T &obj) {
-  auto size = v.size();
-  v.resize(size + sizeof(T));
-
-  std::memcpy(&v[size], &obj, sizeof(T));
-  return v;
 }

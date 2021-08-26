@@ -1,8 +1,7 @@
-//
-// Created by marek on 22/08/2021.
-//
-
 #include "PlayerEliminatedEvent.h"
+
+#include "../../util/constants.h"
 PlayerEliminatedEvent::PlayerEliminatedEvent(int number) {
-  // TODO
+  data.push_back(PLAYER_ELIMINATED_EVENT_LEN);
+  data.push_back(number);
 }

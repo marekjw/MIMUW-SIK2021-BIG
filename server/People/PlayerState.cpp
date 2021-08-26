@@ -1,5 +1,7 @@
 #include "PlayerState.h"
 
+int PlayerState::turning_speed;
+
 void PlayerState::update_direction() {
   if (!connected)
     return;

@@ -1,9 +1,5 @@
-//
-// Created by marek on 25/08/2021.
-//
-
-#ifndef BIG_ZADANIE_NEWGAMEEVENT_H
-#define BIG_ZADANIE_NEWGAMEEVENT_H
+#ifndef NEWGAMEEVENT_H
+#define NEWGAMEEVENT_H
 
 #include "Event.h"
 #include "../People/PlayerState.h"
@@ -12,7 +8,8 @@
 
 class NewGameEvent: public Event{
 public:
-  NewGameEvent(std::vector<PlayerState> &players);
+  NewGameEvent(std::vector<PlayerState> &players, uint32_t max_x,
+                        uint32_t max_y);
 };
 
-#endif // BIG_ZADANIE_NEWGAMEEVENT_H
+#endif // NEWGAMEEVENT_H

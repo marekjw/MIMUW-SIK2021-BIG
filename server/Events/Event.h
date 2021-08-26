@@ -4,7 +4,7 @@
 #include <vector>
 
 class Event {
-private:
+protected:
   std::vector<unsigned char> data;
 
 public:

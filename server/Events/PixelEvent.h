@@ -1,9 +1,5 @@
-//
-// Created by marek on 22/08/2021.
-//
-
-#ifndef BIG_ZADANIE_PIXELEVENT_H
-#define BIG_ZADANIE_PIXELEVENT_H
+#ifndef PIXELEVENT_H
+#define PIXELEVENT_H
 
 #include "Event.h"
 
@@ -14,4 +10,4 @@ public:
   PixelEvent(int number, std::pair<int, int> position);
 };
 
-#endif // BIG_ZADANIE_PIXELEVENT_H
+#endif // PIXELEVENT_H

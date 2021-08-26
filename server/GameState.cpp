@@ -21,7 +21,7 @@ void GameState::set_up_new_game() {
   int count = 0;
   for (auto &player : players_sorted) {
     *(player.get_map_pointer()) = &player;
-    player.set_position(rng() % width + 0.5, rng() % height + 0.5, rng() % 360);
+    player.set_position(rng() % max_x + 0.5, rng() % max_y + 0.5, rng() % 360);
     player.set_number(count++);
     if (pixels[player.get_x()][player.get_y()]) {
       pixels[player.get_x()][player.get_y()] = false;
@@ -176,7 +176,7 @@ void GameState::reset() {
     column.clear();
   pixels.clear();
   pixels =
-      std::vector<std::vector<bool>>(width, std::vector<bool>(height, true));
+      std::vector<std::vector<bool>>(max_x, std::vector<bool>(max_y, true));
 
   game_on_mutex.unlock();
   clients_mutex.unlock();
@@ -216,3 +216,5 @@ bool GameState::can_start_game() {
   clients_mutex.unlock();
   return res;
 }
+uint32_t GameState::get_max_x() const { return max_x;}
+uint32_t GameState::get_max_y() const { return max_y;}

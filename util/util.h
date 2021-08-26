@@ -7,6 +7,7 @@
 
 #include <arpa/inet.h>
 #include <cstdint>
+#include <cstring>
 #include <netinet/in.h>
 #include <string>
 #include <vector>
@@ -33,7 +34,11 @@ public:
   static bool get_ip_str(const sockaddr_storage *from, char *s, int &port);
 
   template <typename T>
-  static std::vector<unsigned char> &serialize(std::vector<unsigned char> &v,
-                                               const T &obj);
+  static void serialize(std::vector<unsigned char> &v, const T &obj) {
+    auto size = v.size();
+    v.resize(size + sizeof(T));
+
+    std::memcpy(&v[size], &obj, sizeof(T));
+  }
 };
 #endif // UTIL_H

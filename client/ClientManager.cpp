@@ -98,7 +98,7 @@ void ClientManager::send_to_server() {
   std::vector<unsigned char> message;
 
   util::serialize(message, state.get_n_session_id());
-  message.push_back(state.get_turn_direction());
+  message.push_back((unsigned char)state.get_turn_direction());
   util::serialize(message, state.get_next_expected_event_no());
   std::copy(state.get_name().begin(), state.get_name().end(),
             std::back_inserter(message));
@@ -188,9 +188,9 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
 void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
                                          uint32_t event_no) {
   state.play_game(); // TODO numer gry
-  uint32_t max_x = util::read_uint32_from_network_stream(server_buffer + start);
-  start += 4;
   uint32_t max_y = util::read_uint32_from_network_stream(server_buffer + start);
+  start += 4;
+  uint32_t max_x = util::read_uint32_from_network_stream(server_buffer + start);
   start += 4;
 
   // TODO a co z danymi bez sensu
@@ -221,9 +221,9 @@ void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
   // TODO validate data
   uint32_t x, y;
   unsigned char player_no = server_buffer[start++];
-  x = util::read_uint32_from_network_stream(server_buffer + start);
-  start += 4;
   y = util::read_uint32_from_network_stream(server_buffer + start);
+  start += 4;
+  x = util::read_uint32_from_network_stream(server_buffer + start);
   auto data = new std::string("PIXEL ");
   data->append(std::to_string(x) + ' ');
   data->append(std::to_string(y) + ' ');

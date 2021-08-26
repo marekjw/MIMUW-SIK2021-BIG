@@ -14,7 +14,7 @@
 
 class PlayerState : public Person {
 private:
-  std::atomic<int> turn_direction, direction{};
+  int turn_direction, direction;
   // accesed only in ServerManager game_loop
   double long x{}, y{};
   static int turning_speed;

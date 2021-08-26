@@ -17,7 +17,7 @@ class GameState {
 private:
   std::vector<std::vector<bool>> pixels;
 
-  int width, height;
+  uint32_t max_x, max_y;
   unsigned long ready_players_no, players_alive_no;
   std::vector<PlayerState> players_sorted;
   uint32_t game_id{};
@@ -34,7 +34,7 @@ private:
 
 public:
   GameState(int width, int height, int turning_speed, Random &random)
-      : width(width), height(height), ready_players_no(0),
+      : max_x(width), max_y(height), ready_players_no(0),
         the_game_is_on(false), players_alive_no(0), rng(random) {
     PlayerState::initialize(turning_speed);
     pixels =
@@ -109,6 +109,8 @@ public:
 
   void disconnect_inactive_ones();
   bool can_start_game();
+  [[nodiscard]] uint32_t get_max_x() const;
+  [[nodiscard]] uint32_t get_max_y() const;
 };
 
 #endif // GAMESTATE_H
