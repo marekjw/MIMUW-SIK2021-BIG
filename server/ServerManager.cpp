@@ -156,13 +156,13 @@ void ServerManager::send_datagram(std::vector<unsigned char> &msg,
   }
 
   msg.clear();
-  msg.push_back(htonl(state.get_game_id()));
+  util::serialize(msg, htonl(state.get_game_id()));
 }
 
 void ServerManager::send_events_to(uint32_t next_expected_event,
                                    const sockaddr_storage *destination) {
   std::vector<unsigned char> msg;
-  msg.push_back(htonl(state.get_game_id()));
+  util::serialize(msg, htonl(state.get_game_id()));
   for (auto i = next_expected_event; i < events.size(); ++i) {
     if (msg.size() - GAME_NO_BYTES + events[i].get_data().size() >
         MAX_DATA_FROM_SERVER_LEN) {

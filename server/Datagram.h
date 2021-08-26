@@ -1,10 +1,7 @@
-//
-// Created by marek on 23/08/2021.
-//
+#ifndef DATAGRAM_H
+#define DATAGRAM_H
 
-#ifndef BIG_ZADANIE_DATAGRAM_H
-#define BIG_ZADANIE_DATAGRAM_H
-
+#include "../util/util.h"
 #include <cstdint>
 #include <string>
 
@@ -18,21 +15,19 @@ private:
 public:
   Datagram(unsigned char *buffer, long len);
 
-  const std::string &get_name();
+  const std::string &get_name() { return name; };
 
   [[nodiscard]] uint32_t get_next_expected_event_no() const {
     return next_expected_event_no;
   }
 
-  bool invalid_name();
+  bool invalid_name() { return !util::is_name_valid(name); };
 
-  [[nodiscard]] short get_turn_direction() const{
-    return turn_direction;
-  }
+  [[nodiscard]] short get_turn_direction() const { return turn_direction; }
 
   [[nodiscard]] const std::string &get_name() const { return name; }
 
   [[nodiscard]] uint64_t get_session_id() const { return session_id; }
 };
 
-#endif // BIG_ZADANIE_DATAGRAM_H
+#endif // DATAGRAM_H

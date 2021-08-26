@@ -96,10 +96,10 @@ msg_from_gui ClientManager::read_from_gui() {
 }
 void ClientManager::send_to_server() {
   std::vector<unsigned char> message;
-  // TODO change htonl to 64 bit
-  message.push_back(htonl(state.get_session_id()));
-  message.push_back(htons(state.get_turn_direction()));
-  message.push_back(htonl(state.get_next_expected_event_no()));
+
+  util::serialize(message, state.get_n_session_id());
+  message.push_back(state.get_turn_direction());
+  util::serialize(message, state.get_next_expected_event_no());
   std::copy(state.get_name().begin(), state.get_name().end(),
             std::back_inserter(message));
 

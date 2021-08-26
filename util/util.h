@@ -5,10 +5,11 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <string>
 #include <arpa/inet.h>
 #include <cstdint>
 #include <netinet/in.h>
+#include <string>
+#include <vector>
 
 class util {
 public:
@@ -31,5 +32,8 @@ public:
 
   static bool get_ip_str(const sockaddr_storage *from, char *s, int &port);
 
+  template <typename T>
+  static std::vector<unsigned char> &serialize(std::vector<unsigned char> &v,
+                                               const T &obj);
 };
 #endif // UTIL_H

@@ -7,6 +7,7 @@
 #include "Event.h"
 #include <atomic>
 #include <condition_variable>
+#include <endian.h>
 #include <iostream>
 #include <map>
 #include <mutex>
@@ -21,7 +22,7 @@ private:
   uint32_t next_expected_event_no; // number of the next expected event to be
                                    // received from the server
   uint32_t next_event_to_send_no;  // number of the next event to send to gui
-  uint64_t session_id{};
+  uint64_t session_id{}, n_session_id;
 
   bool game_no_set;
   uint32_t game_no;
@@ -41,7 +42,8 @@ public:
   explicit ClientState(std::string name, uint64_t session_id)
       : name(std::move(name)), turn_direction(0), next_expected_event_no(0),
         next_event_to_send_no(0), session_id(session_id), game_no(0),
-        game_no_set(false), left_key_pressed(false), right_key_pressed(false){};
+        game_no_set(false), left_key_pressed(false), right_key_pressed(false),
+        n_session_id(htobe64(session_id)){};
 
   [[nodiscard]] short get_turn_direction() const { return turn_direction; }
 
@@ -97,6 +99,8 @@ public:
    * @param res
    */
   void append_player_names(std::string &res);
+
+  [[nodiscard]] uint64_t get_n_session_id() const {return n_session_id;}
 
   /**
    * sends an event to gui, using the socket

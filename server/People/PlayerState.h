@@ -6,9 +6,9 @@
 #include "../Datagram.h"
 #include "Person.h"
 #include <atomic>
+#include <cmath>
 #include <map>
 #include <netinet/in.h>
-#include <cmath>
 #include <string>
 #include <utility>
 
@@ -26,24 +26,21 @@ private:
   std::string name;
   bool alive, ready, connected;
 
-  static double d2r(double d) {
-    return (d / 180.0) * ((double) M_PI);
-  }
+  static double d2r(double d) { return (d / 180.0) * ((double)M_PI); }
 
 public:
   static void initialize(int speed) { turning_speed = speed; }
 
   PlayerState(sockaddr_storage addr, const Datagram &datagram)
-      : Person(addr, datagram.get_session_id()), ready(false),
-        connected(true), name(datagram.get_name()), alive(true),
+      : Person(addr, datagram.get_session_id()), ready(false), connected(true),
+        name(datagram.get_name()), alive(true),
         turn_direction(datagram.get_turn_direction()), number(0) {}
 
-  void set_turn_direction(int new_turn_direction) {
+  inline void set_turn_direction(int new_turn_direction) {
     turn_direction = new_turn_direction;
   }
 
   void update_direction();
-
 
   /**
    * Updates the player position
@@ -57,16 +54,14 @@ public:
 
   void kill() { alive = false; }
 
-  void set_number(int id){
-    number = id;
-  }
+  void set_number(int id) { number = id; }
 
   void make_ready() { ready = true; };
 
   [[nodiscard]] bool is_ready() const { return ready; }
   [[nodiscard]] bool is_alive() const;
 
-  void disconnect(){connected = false;}
+  void disconnect() { connected = false; }
 
   [[nodiscard]] PlayerState **get_map_pointer() const { return map_pointer; }
 
