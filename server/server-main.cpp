@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
   memset(&hints, 0, sizeof hints);
   hints.ai_protocol = IPPROTO_UDP;
   hints.ai_flags = AI_PASSIVE;
+  hints.ai_family = AF_INET6;
 
   int server_socket, status;
   if ((status = getaddrinfo(nullptr, port_no.data(), &hints, &addr)) != 0) {

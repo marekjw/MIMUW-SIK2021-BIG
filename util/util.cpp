@@ -30,7 +30,7 @@ bool util::get_ip_str(const sockaddr_storage *from, char *res, int &port) {
       warning("Could not parse IP6 address");
       return false;
     }
-    port = ntohs(((struct sockaddr_in6 *)from)->sin6_flowinfo);
+    port = ntohs(((struct sockaddr_in6 *)from)->sin6_port);
     break;
   default:
     warning("Unknown AF");
