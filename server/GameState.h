@@ -32,7 +32,7 @@ private:
 
   Random &rng;
 
-  bool update_spectator_(const Datagram &datagram, const sockaddr_storage *from);
+  bool update_spectator_(const Datagram &datagram, const sockaddr_storage *from,  char *res, int port);
 
   bool update_player_(const Datagram &datagram, const sockaddr_storage *address);
 

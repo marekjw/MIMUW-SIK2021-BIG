@@ -14,22 +14,21 @@
 #include <unistd.h>
 
 static int setup_connection(const char *address, const char *port,
-                            const addrinfo *hints, addrinfo **addr_ptr) {
+                            const addrinfo *hints, addrinfo *&addr_ptr) {
   int sock, status;
-  if ((status = getaddrinfo(address, port, hints, addr_ptr)) < 0) {
+  if ((status = getaddrinfo(address, port, hints, &addr_ptr)) < 0) {
     fprintf(stderr, "getaddrinfo (%s) error: %s\n", address,
             gai_strerror(status));
     exit(1);
   }
 
-  addrinfo *addr = *addr_ptr;
-
-  sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+  sock =
+      socket(addr_ptr->ai_family, addr_ptr->ai_socktype, addr_ptr->ai_protocol);
 
   if (sock < 0)
     syserr("Could not create socket");
   if (hints->ai_protocol != IPPROTO_UDP) {
-    if (connect(sock, addr->ai_addr, addr->ai_addrlen) < 0)
+    if (connect(sock, addr_ptr->ai_addr, addr_ptr->ai_addrlen) < 0)
       syserr("Could not connect socket");
   }
   return sock;
@@ -94,14 +93,16 @@ int main(int argc, char **argv) {
   int game_socket, gui_socket;
 
   hints.ai_protocol = IPPROTO_UDP;
+  hints.ai_socktype = SOCK_DGRAM;
   game_socket = setup_connection(game_address.data(), game_port.data(), &hints,
-                                 &game_addrinfo);
+                                 game_addrinfo);
 
   std::cout << "GAME OK\n";
 
+  memset(&hints, 0, sizeof hints);
   hints.ai_protocol = IPPROTO_TCP;
   gui_socket = setup_connection(gui_address.data(), gui_port.data(), &hints,
-                                &gui_addrinfo);
+                                gui_addrinfo);
 
   StreamBuffer gui_buffer{gui_socket};
 

@@ -129,10 +129,9 @@ void ServerManager::game_loop() {
   }
 }
 void ServerManager::add_event(const Event &event) {
-  std::unique_lock<std::mutex> lock(event_mutex);
-  lock.lock();
+  event_mutex.lock();
   events.push_back(event);
-  lock.unlock();
+  event_mutex.unlock();
 }
 
 void ServerManager::send_events_queue() {

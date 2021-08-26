@@ -102,9 +102,8 @@ void ClientManager::send_to_server() {
   util::serialize(message, state.get_next_expected_event_no());
   std::copy(state.get_name().begin(), state.get_name().end(),
             std::back_inserter(message));
-
   if (sendto(game_socket, message.data(), message.size(), 0,
-             server_addr->ai_addr, server_addr->ai_addrlen) < 0)
+             server_addr->ai_addr, server_addr->ai_addrlen) < message.size())
     syserr("Could not send datagram to server");
 }
 

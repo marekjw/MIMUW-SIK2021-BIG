@@ -63,14 +63,19 @@ bool GameState::update_spectator(const Datagram &datagram,
   if (!util::get_ip_str(from, res, port))
     return false;
 
-  std::unique_lock<std::mutex> lock(clients_mutex);
-  lock.lock();
+  clients_mutex.lock();
+  bool result = update_spectator_(datagram, from, res, port);
+  clients_mutex.unlock();
+  return result;
+}
 
+bool GameState::update_spectator_(const Datagram &datagram,
+                                  const sockaddr_storage *from, char *res, int port) {
   auto ptr = spectators.find({res, port});
 
   if (ptr == spectators.end()) {
     // create a new spectator
-    std::cerr<<"New specator\n";
+    std::cerr << "New specator\n";
     spectators.insert({{res, port}, Person{*from, datagram.get_session_id()}});
     return true;
   } else {
@@ -90,6 +95,7 @@ bool GameState::update_spectator(const Datagram &datagram,
 
   return false;
 }
+
 bool GameState::update_player(const Datagram &datagram,
                               const sockaddr_storage *from) {
   int port;
@@ -148,11 +154,6 @@ bool GameState::update_player(const Datagram &datagram,
   return false;
 }
 
-
-bool GameState::update_spectator_(const Datagram &datagram,
-                                  const sockaddr_storage *from) {
-  return false;
-}
 bool GameState::update_player_(const Datagram &datagram,
                                const sockaddr_storage *address) {
   return false;
@@ -232,4 +233,3 @@ bool GameState::can_start_game() {
 }
 uint32_t GameState::get_max_x() const { return max_x; }
 uint32_t GameState::get_max_y() const { return max_y; }
-
