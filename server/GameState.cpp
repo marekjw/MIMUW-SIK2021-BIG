@@ -3,8 +3,9 @@
 
 #include <algorithm>
 #include <arpa/inet.h>
+#include <iostream>
 void GameState::set_up_new_game() {
-  map_mutex.lock();
+  clients_mutex.lock();
   game_on_mutex.lock();
 
   game_id = rng();
@@ -17,12 +18,20 @@ void GameState::set_up_new_game() {
               return a.get_name() < b.get_name();
             });
 
+  int count = 0;
   for (auto &player : players_sorted) {
     *(player.get_map_pointer()) = &player;
+    player.set_position(rng() % width + 0.5, rng() % height + 0.5, rng() % 360);
+    player.set_number(count++);
+    if (pixels[player.get_x()][player.get_y()]) {
+      pixels[player.get_x()][player.get_y()] = false;
+    } else {
+      kill_player(player);
+    }
   }
 
   game_on_mutex.unlock();
-  map_mutex.unlock();
+  clients_mutex.unlock();
 }
 
 bool GameState::is_game_on() {
@@ -54,7 +63,7 @@ bool GameState::update_spectator(const Datagram &datagram,
   if (!util::get_ip_str(from, res, port))
     return false;
 
-  std::unique_lock<std::mutex> lock(map_mutex);
+  std::unique_lock<std::mutex> lock(clients_mutex);
   lock.lock();
 
   auto ptr = spectators.find({res, port});
@@ -88,7 +97,7 @@ bool GameState::update_player(const Datagram &datagram,
   if (!util::get_ip_str(from, res, port))
     return false;
 
-  std::unique_lock<std::mutex> lock(map_mutex);
+  std::unique_lock<std::mutex> lock(clients_mutex);
   lock.lock();
   auto ptr = players.find({res, port});
 
@@ -97,7 +106,7 @@ bool GameState::update_player(const Datagram &datagram,
       return false;
     }
 
-    players_sorted.emplace_back(*from, 0, datagram);
+    players_sorted.emplace_back(*from, datagram);
     auto it = players.insert({{res, port}, &players_sorted.back()});
     players_sorted.back().set_map_pointer(&(it.first->second));
 
@@ -135,13 +144,13 @@ bool GameState::update_player(const Datagram &datagram,
 
   return false;
 }
-int GameState::ready_players() {
+unsigned long GameState::ready_players() {
   game_on_mutex.lock();
   auto res = ready_players_no;
   game_on_mutex.unlock();
   return res;
 }
-int GameState::players_alive() const { return players_alive_no; }
+unsigned long GameState::players_alive() const { return players_alive_no; }
 
 void GameState::kill_player(PlayerState &player) {
   if (!player.is_alive())
@@ -152,7 +161,7 @@ void GameState::kill_player(PlayerState &player) {
 }
 
 void GameState::reset() {
-  map_mutex.lock();
+  clients_mutex.lock();
   game_on_mutex.lock();
 
   players_sorted.clear();
@@ -166,17 +175,19 @@ void GameState::reset() {
   for (auto &column : pixels)
     column.clear();
   pixels.clear();
-  pixels = std::vector<std::vector<bool>>(width, std::vector<bool>(height));
+  pixels =
+      std::vector<std::vector<bool>>(width, std::vector<bool>(height, true));
 
   game_on_mutex.unlock();
-  map_mutex.unlock();
+  clients_mutex.unlock();
 }
 
 void GameState::disconnect_inactive_ones() {
-  map_mutex.lock();
+  clients_mutex.lock();
   for (auto it = players.cbegin(); it != players.cend();) {
     if (it->second->should_disconnect()) {
       it->second->disconnect();
+      std::cerr << "Disconnect player: " << it->second->get_name() << std::endl;
       it = players.erase(it);
     } else {
       ++it;
@@ -185,11 +196,23 @@ void GameState::disconnect_inactive_ones() {
 
   for (auto it = spectators.cbegin(); it != spectators.cend();) {
     if (it->second.should_disconnect()) {
+      std::cerr << "Disconnect specatator" << std::endl;
       it = spectators.erase(it);
     } else {
       ++it;
     }
   }
 
-  map_mutex.unlock();
+  clients_mutex.unlock();
+}
+
+bool GameState::can_start_game() {
+  clients_mutex.lock();
+
+  bool res = ready_players_no > MIN_AMOUNT_OF_PLAYERS &&
+             std::all_of(players_sorted.begin(), players_sorted.end(),
+                         [](PlayerState &p) { return p.is_ready(); });
+
+  clients_mutex.unlock();
+  return res;
 }

@@ -11,11 +11,14 @@
 #include <sys/socket.h>
 #include <vector>
 
+// TODO - musi działać przenoszenie graczy z poprzedniej sesji (albo i nie xd)
+
 class GameState {
 private:
   std::vector<std::vector<bool>> pixels;
 
-  int width, height, turning_speed, round_per_sec, ready_players_no;
+  int width, height;
+  unsigned long ready_players_no, players_alive_no;
   std::vector<PlayerState> players_sorted;
   uint32_t game_id{};
 
@@ -25,20 +28,17 @@ private:
 
   std::map<std::pair<std::string, int>, Person> spectators;
 
-  std::mutex map_mutex, game_on_mutex;
-
-  int players_alive_no;
+  std::mutex clients_mutex, game_on_mutex;
 
   Random &rng;
 
 public:
-  GameState(int width, int height, int turning_speed, int rounds_per_sec,
-            Random &random)
-      : width(width), height(height), turning_speed(turning_speed),
-        round_per_sec(rounds_per_sec), ready_players_no(0),
+  GameState(int width, int height, int turning_speed, Random &random)
+      : width(width), height(height), ready_players_no(0),
         the_game_is_on(false), players_alive_no(0), rng(random) {
     PlayerState::initialize(turning_speed);
-    pixels = std::vector<std::vector<bool>>(width, std::vector<bool>(height));
+    pixels =
+        std::vector<std::vector<bool>>(width, std::vector<bool>(height, true));
   }
 
   /**
@@ -47,7 +47,7 @@ public:
    * (thread safe)
    * @return
    */
-  int ready_players();
+  unsigned long ready_players();
 
   void set_up_new_game();
   /**
@@ -67,7 +67,7 @@ public:
   /**
    * @return number of alive players_sorted
    */
-  [[nodiscard]] int players_alive() const;
+  [[nodiscard]] unsigned long players_alive() const;
 
   bool is_game_on();
 
@@ -80,7 +80,7 @@ public:
    * Thread safe
    * @param datagram
    * @param from - is updated to point at the most current one
-   * @return true if the specator should not be ignored, false otherwise
+   * @return true if the spectator should not be ignored, false otherwise
    */
   bool update_spectator(const Datagram &datagram, const sockaddr_storage *from);
 
@@ -94,7 +94,7 @@ public:
 
   void kill_player(PlayerState &player);
 
-  std::mutex &get_map_mutex() { return map_mutex; }
+  std::mutex &get_map_mutex() { return clients_mutex; }
 
   const std::map<std::pair<std::string, int>, PlayerState *> &
   get_players_map() {
@@ -108,6 +108,7 @@ public:
   void reset();
 
   void disconnect_inactive_ones();
+  bool can_start_game();
 };
 
 #endif // GAMESTATE_H

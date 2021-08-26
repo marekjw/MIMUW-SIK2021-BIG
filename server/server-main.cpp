@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
   Random rand{seed};
 
-  GameState game{width, height, turning_speed, round_per_sec, rand};
+  GameState game{width, height, turning_speed, rand};
 
   ServerManager server{game, server_socket, (float)round_per_sec};
 

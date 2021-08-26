@@ -8,33 +8,35 @@
 #include <atomic>
 #include <map>
 #include <netinet/in.h>
+#include <cmath>
 #include <string>
 #include <utility>
 
-// TODO double precision
-
 class PlayerState : public Person {
 private:
-  std::atomic<int> turn_direction, direction;
+  std::atomic<int> turn_direction, direction{};
   // accesed only in ServerManager game_loop
-  double long x, y;
+  double long x{}, y{};
   static int turning_speed;
 
-  PlayerState **map_pointer;
+  PlayerState **map_pointer{};
 
-  const int number;
+  int number;
 
   std::string name;
-  bool alive;
+  bool alive, ready, connected;
+
+  static double d2r(double d) {
+    return (d / 180.0) * ((double) M_PI);
+  }
 
 public:
   static void initialize(int speed) { turning_speed = speed; }
 
-  // TODO finish the constructor
-  PlayerState(sockaddr_storage addr, int number, const Datagram &datagram)
-      : Person(addr, datagram.get_session_id()), number(number),
-        name(datagram.get_name()),
-        turn_direction(datagram.get_turn_direction()) {}
+  PlayerState(sockaddr_storage addr, const Datagram &datagram)
+      : Person(addr, datagram.get_session_id()), ready(false),
+        connected(true), name(datagram.get_name()), alive(true),
+        turn_direction(datagram.get_turn_direction()), number(0) {}
 
   void set_turn_direction(int new_turn_direction) {
     turn_direction = new_turn_direction;
@@ -42,7 +44,6 @@ public:
 
   void update_direction();
 
-  int get_direction() { return direction; }
 
   /**
    * Updates the player position
@@ -54,20 +55,33 @@ public:
 
   std::pair<int, int> get_position();
 
-  void kill(){ alive = false;}
+  void kill() { alive = false; }
 
-  void make_ready();
+  void set_number(int id){
+    number = id;
+  }
 
-  bool is_ready();
-  bool is_alive() const;
+  void make_ready() { ready = true; };
 
-  void disconnect();
+  [[nodiscard]] bool is_ready() const { return ready; }
+  [[nodiscard]] bool is_alive() const;
+
+  void disconnect(){connected = false;}
 
   [[nodiscard]] PlayerState **get_map_pointer() const { return map_pointer; }
 
   void set_map_pointer(PlayerState **ptr) { map_pointer = ptr; }
 
   [[nodiscard]] const std::string &get_name() const { return name; }
+
+  void set_position(double new_x, double new_y, int new_direction) {
+    x = new_x;
+    y = new_y;
+    direction = new_direction;
+  }
+
+  [[nodiscard]] int get_x() const { return x; }
+  [[nodiscard]] int get_y() const { return y; }
 };
 
 #endif

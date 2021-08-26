@@ -3,6 +3,7 @@
 #include "../util/err.h"
 #include "Datagram.h"
 #include "Events/GameOverEvent.h"
+#include "Events/NewGameEvent.h"
 #include "Events/PixelEvent.h"
 #include "Events/PlayerEliminatedEvent.h"
 
@@ -22,10 +23,31 @@ void ServerManager::start() {
     auto wake_up_at = std::chrono::steady_clock::now() +
                       std::chrono::milliseconds(round_time);
     state.disconnect_inactive_ones();
-    if (state.ready_players() >= MIN_AMOUNT_OF_PLAYERS) {
+    if (state.can_start_game()) {
       state.set_up_new_game();
-      game_loop();
+
+      add_event(NewGameEvent(state.get_players()));
+
+      for (auto &player : state.get_players()) {
+        if (player.is_alive()) {
+          add_event(PixelEvent(player.get_number(), player.get_position()));
+        } else {
+          add_event(PlayerEliminatedEvent(player.get_number()));
+        }
+      }
+
+      if (state.players_alive() == 1) {
+        add_event(GameOverEvent());
+        send_events_queue();
+      } else {
+        send_events_queue();
+        game_loop();
+      }
+
+      event_mutex.lock();
       state.reset();
+      events.clear();
+      event_mutex.unlock();
     }
     std::this_thread::sleep_until(wake_up_at);
   }
