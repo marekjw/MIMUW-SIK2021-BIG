@@ -78,8 +78,10 @@ const std::string &ClientState::get_player_name(size_t index) {
 }
 
 void ClientState::append_player_names(std::string &res) {
-  for (auto const &n : players_names)
+  for (auto const &n : players_names) {
+    res.push_back(' ');
     res.append(n);
+  }
 }
 
 bool ClientState::valid_game_number(uint32_t game_number) {
@@ -89,5 +91,6 @@ bool ClientState::valid_game_number(uint32_t game_number) {
 void ClientState::send_event_to_gui(Event event, int socket) {
   if (event.get_type() == GAME_OVER_EVENT)
     return;
+  std::cerr << "SENDING TO GUI: " << *event.get_data_ptr() << "\n";
   send(socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(), 0);
 }

@@ -4,11 +4,11 @@
 
 PixelEvent::PixelEvent(uint32_t event_no, std::pair<int, int> position,
                        int number) {
-  util::serialize(data, htonl((uint32_t)PIXEL_EVENT_LEN));
-  util::serialize(data, htonl(event_no));
-  data.push_back(PIXEL_EVENT);
+  util::serialize(data, htonl(len));
+  util::serialize(data, htonl(event_no));        // 4 bytes
+  data.push_back(PIXEL_EVENT);                   // 1 byte
   data.push_back(number);                        // only one byte
-  util::serialize(data, htonl(position.second)); // y
-  util::serialize(data, htonl(position.first));  // x
+  util::serialize(data, htonl(position.second)); // y 4 bytes
+  util::serialize(data, htonl(position.first));  // x 4 bytes
   calculate_crc();
 }

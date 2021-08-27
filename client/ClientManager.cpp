@@ -158,7 +158,11 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
   uint32_t event_no =
       ntohl(*(reinterpret_cast<uint32_t *>(server_buffer + counter)));
 
-  state.set_next_expected_event_no(event_no + 1);
+  if (event_no < state.get_next_expected_event_no()) {
+    ssize_t end = counter + len;
+    counter = end + CRC32LEN;
+    return;
+  }
 
   ssize_t end = counter + len;
   counter += 4;
@@ -166,16 +170,20 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
   switch (server_buffer[counter++]) {
   case NEW_GAME_EVENT:
     std::cerr << "NEW GAME EVENT\n";
+    state.set_next_expected_event_no(event_no + 1);
     parse_new_game_event(counter, end, event_no);
     break;
   case PIXEL_EVENT:
     std::cerr << "PIXEL EVENT\n";
+    state.set_next_expected_event_no(event_no + 1);
     parse_pixel_event(counter, end, event_no);
     break;
   case PLAYER_ELIMINATED_EVENT:
+    state.set_next_expected_event_no(event_no + 1);
     parse_player_eliminated_event(counter, end, event_no);
     break;
   case GAME_OVER_EVENT:
+    state.set_next_expected_event_no(event_no + 1);
     handle_game_over_event(event_no);
     break;
   default:
