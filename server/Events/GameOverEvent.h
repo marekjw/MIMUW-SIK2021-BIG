@@ -6,8 +6,8 @@
 
 class GameOverEvent : public Event {
 public:
-  GameOverEvent(){
-    data.push_back(GAME_OVER_LEN);
+  GameOverEvent() {
+    util::serialize(data, htonl((uint32_t)GAME_OVER_LEN));
     data.push_back(GAME_OVER_EVENT);
     calculate_crc();
   }

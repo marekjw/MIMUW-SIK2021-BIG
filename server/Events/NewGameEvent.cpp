@@ -16,7 +16,7 @@ NewGameEvent::NewGameEvent(std::vector<PlayerState> &players, uint32_t max_x,
   }
   temp.pop_back();
 
-  data.push_back(temp.size());
+  util::serialize(data, htonl((uint32_t)temp.size()));
   data.push_back(NEW_GAME_EVENT);
 
   data.insert(data.end(), temp.begin(), temp.end());

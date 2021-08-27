@@ -114,8 +114,10 @@ ClientManager::~ClientManager() {
 
 void ClientManager::parse_server_buffer(ssize_t size) {
   uint32_t game_number = util::read_uint32_from_network_stream(server_buffer);
-  if (!state.valid_game_number(game_number))
+  if (!state.valid_game_number(game_number)) {
+    std::cerr << "INVALID GAME NUMBER\n";
     return;
+  }
 
   ssize_t counter = GAME_NO_BYTES;
 
@@ -129,6 +131,7 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
       ntohl(*(reinterpret_cast<uint32_t *>(server_buffer + counter)));
   if (len + CRC32LEN + LEN_LEN >= BUFFER_SIZE - counter) {
     // len is invalid, as it doesn't fit in the buffer
+    std::cerr << "INVALID LEN " << len << " " << counter << " " << size << "\n";
     counter = size;
     return;
   }
@@ -140,6 +143,7 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
 
   if (crc != crc_received) {
     // crc is invalid
+    std::cerr << "CRC INVALID " << crc << " " << crc_received << "\n";
     crc_ok = false;
     return;
   }
@@ -161,9 +165,11 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
 
   switch (server_buffer[counter++]) {
   case NEW_GAME_EVENT:
+    std::cerr << "NEW GAME EVENT\n";
     parse_new_game_event(counter, end, event_no);
     break;
   case PIXEL_EVENT:
+    std::cerr << "PIXEL EVENT\n";
     parse_pixel_event(counter, end, event_no);
     break;
   case PLAYER_ELIMINATED_EVENT:
@@ -171,6 +177,9 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
     break;
   case GAME_OVER_EVENT:
     handle_game_over_event(event_no);
+    break;
+  default:
+    std::cerr << "UNKNOWN EVENT\n";
   }
   counter = end + CRC32LEN;
 }
