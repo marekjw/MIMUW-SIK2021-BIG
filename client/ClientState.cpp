@@ -62,7 +62,6 @@ void ClientState::update_direction(msg_from_gui event) {
 
 void ClientState::add_event(uint32_t event_no, Event event) {
   std::unique_lock<std::mutex> lock(queue_mutex);
-  lock.lock();
 
   if (event_no >= next_event_to_send_no) {
     queue.insert({event_no, event});
