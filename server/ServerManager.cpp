@@ -26,20 +26,20 @@ void ServerManager::start() {
     if (state.can_start_game()) {
       state.set_up_new_game();
 
-      add_event(NewGameEvent(state.get_players(), state.get_max_x(),
-                             state.get_max_y()));
+      add_event(NewGameEvent(events.size(), state.get_players(), state.get_max_y(),
+                             state.get_max_x()));
 
       for (auto &player : state.get_players()) {
         if (player.is_alive()) {
-          add_event(PixelEvent(player.get_number(), player.get_position()));
+          add_event(PixelEvent(events.size(), player.get_position(), player.get_number()));
         } else {
-          add_event(PlayerEliminatedEvent(player.get_number()));
+          add_event(PlayerEliminatedEvent(events.size(), player.get_number()));
         }
       }
 
       // check if the game is over
       if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
-        add_event(GameOverEvent());
+        add_event(GameOverEvent(events.size()));
         send_events_queue();
       } else {
         send_events_queue();
@@ -112,16 +112,16 @@ void ServerManager::game_loop() {
 
         state.kill_player(player);
 
-        add_event(PlayerEliminatedEvent(player.get_number()));
+        add_event(PlayerEliminatedEvent(events.size(), player.get_number()));
         // check if the game is over
         if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
-          add_event(GameOverEvent());
+          add_event(GameOverEvent(events.size()));
           send_events_queue();
           return;
         }
       } else {
         state.eat_pixel(player.get_position());
-        add_event(PixelEvent(player.get_number(), player.get_position()));
+        add_event(PixelEvent(events.size(), player.get_position(), player.get_number()));
       }
     }
     send_events_queue();

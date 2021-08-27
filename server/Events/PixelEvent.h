@@ -7,7 +7,7 @@
 
 class PixelEvent: public Event{
 public:
-  PixelEvent(int number, std::pair<int, int> position);
+  PixelEvent(uint32_t event_no, std::pair<int, int> position, int number);
 };
 
 #endif // PIXELEVENT_H

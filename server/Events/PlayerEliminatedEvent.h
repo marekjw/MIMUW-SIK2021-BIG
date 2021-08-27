@@ -5,7 +5,7 @@
 
 class PlayerEliminatedEvent : public Event {
 public:
-  explicit PlayerEliminatedEvent(int number);
+  PlayerEliminatedEvent(uint32_t event_no, int number);
 };
 
 #endif // PLAYERELIMINATED_H

@@ -8,8 +8,8 @@
 
 class NewGameEvent: public Event{
 public:
-  NewGameEvent(std::vector<PlayerState> &players, uint32_t max_x,
-                        uint32_t max_y);
+  NewGameEvent(uint32_t event_no, std::vector<PlayerState> &players,
+               uint32_t max_y, uint32_t max_x);
 };
 
 #endif // NEWGAMEEVENT_H

@@ -3,8 +3,8 @@
 #include "../../util/constants.h"
 #include "../../util/util.h"
 
-NewGameEvent::NewGameEvent(std::vector<PlayerState> &players, uint32_t max_x,
-                           uint32_t max_y) {
+NewGameEvent::NewGameEvent(uint32_t event_no, std::vector<PlayerState> &players,
+                           uint32_t max_y, uint32_t max_x) {
   std::vector<unsigned char> temp;
 
   util::serialize(temp, htonl(max_y));
@@ -16,7 +16,9 @@ NewGameEvent::NewGameEvent(std::vector<PlayerState> &players, uint32_t max_x,
   }
   temp.pop_back();
 
-  util::serialize(data, htonl((uint32_t)temp.size()));
+  // + 5 ----> 1 byte event type, 4 bytes event no
+  util::serialize(data, htonl((uint32_t)temp.size() + 5));
+  util::serialize(data, htonl(event_no));
   data.push_back(NEW_GAME_EVENT);
 
   data.insert(data.end(), temp.begin(), temp.end());
