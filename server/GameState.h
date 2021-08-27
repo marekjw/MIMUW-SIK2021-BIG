@@ -34,7 +34,8 @@ private:
 
   bool update_spectator_(const Datagram &datagram, const sockaddr_storage *from,  char *res, int port);
 
-  bool update_player_(const Datagram &datagram, const sockaddr_storage *address);
+  bool update_player_(const Datagram &datagram, const sockaddr_storage *address,
+                      char *name, int port);
 
 public:
   GameState(int width, int height, int turning_speed, Random &random)

@@ -8,6 +8,8 @@ void GameState::set_up_new_game() {
   clients_mutex.lock();
   game_on_mutex.lock();
 
+  std::cerr << "Setting up new game\n";
+
   game_id = rng();
   the_game_is_on = true;
 
@@ -70,7 +72,8 @@ bool GameState::update_spectator(const Datagram &datagram,
 }
 
 bool GameState::update_spectator_(const Datagram &datagram,
-                                  const sockaddr_storage *from, char *res, int port) {
+                                  const sockaddr_storage *from, char *res,
+                                  int port) {
   auto ptr = spectators.find({res, port});
 
   if (ptr == spectators.end()) {
@@ -104,8 +107,16 @@ bool GameState::update_player(const Datagram &datagram,
   if (!util::get_ip_str(from, res, port))
     return false;
 
-  std::unique_lock<std::mutex> lock(clients_mutex);
-  lock.lock();
+  clients_mutex.lock();
+  bool result = update_player_(datagram, from, res, port);
+  clients_mutex.unlock();
+  return result;
+}
+
+bool GameState::update_player_(const Datagram &datagram,
+                               const sockaddr_storage *from, char *res,
+                               int port) {
+
   auto ptr = players.find({res, port});
 
   if (ptr == players.end()) {
@@ -144,6 +155,8 @@ bool GameState::update_player(const Datagram &datagram,
             datagram.get_turn_direction() != STRAIGHT) {
           ptr->second->make_ready();
           ++ready_players_no;
+          std::cerr << "Now there are " << ready_players_no
+                    << " players ready\n";
         }
       }
       game_on_mutex.unlock();
@@ -151,11 +164,6 @@ bool GameState::update_player(const Datagram &datagram,
     }
   }
 
-  return false;
-}
-
-bool GameState::update_player_(const Datagram &datagram,
-                               const sockaddr_storage *address) {
   return false;
 }
 
@@ -170,6 +178,8 @@ unsigned long GameState::players_alive() const { return players_alive_no; }
 void GameState::kill_player(PlayerState &player) {
   if (!player.is_alive())
     return;
+
+  std::cerr << "Killing player " << player.get_name() << "\n";
 
   player.kill();
   --players_alive_no;
@@ -224,7 +234,7 @@ void GameState::disconnect_inactive_ones() {
 bool GameState::can_start_game() {
   clients_mutex.lock();
 
-  bool res = ready_players_no > MIN_AMOUNT_OF_PLAYERS &&
+  bool res = ready_players_no >= MIN_AMOUNT_OF_PLAYERS &&
              std::all_of(players_sorted.begin(), players_sorted.end(),
                          [](PlayerState &p) { return p.is_ready(); });
 

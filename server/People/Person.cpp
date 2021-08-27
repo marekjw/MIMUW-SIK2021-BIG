@@ -1,6 +1,7 @@
 #include "Person.h"
 #include "../../util/constants.h"
 #include <chrono>
+#include <iostream>
 
 void Person::stamp() {
   timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(

@@ -37,7 +37,8 @@ void ServerManager::start() {
         }
       }
 
-      if (state.players_alive() == 1) {
+      // check if the game is over
+      if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
         add_event(GameOverEvent());
         send_events_queue();
       } else {
@@ -58,13 +59,11 @@ void ServerManager::start() {
   struct sockaddr_storage from {};
   socklen_t from_len = sizeof from;
 
-  std::cerr<<"Starting to listen\n";
+  std::cerr << "Starting to listen\n";
   while (true) {
     // SOCKET: RECEIVNING THE DATA
     auto bytes_read = recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
                                (struct sockaddr *)&from, &from_len);
-
-    std::cerr << "New Datagram received\n";
 
     if (bytes_read < 0) {
       warning("Could not read datagram");
@@ -114,7 +113,8 @@ void ServerManager::game_loop() {
         state.kill_player(player);
 
         add_event(PlayerEliminatedEvent(player.get_number()));
-        if (state.players_alive() <= 1) {
+        // check if the game is over
+        if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
           add_event(GameOverEvent());
           send_events_queue();
           return;
@@ -137,8 +137,7 @@ void ServerManager::add_event(const Event &event) {
 void ServerManager::send_events_queue() {
   // TODO może zmienic??
 
-  std::unique_lock<std::mutex> lock(state.get_map_mutex());
-  lock.lock();
+  state.get_map_mutex().lock();
 
   for (auto &it : state.get_players_map())
     send_events_to(next_event_to_send, &it.second->get_address());
@@ -146,7 +145,7 @@ void ServerManager::send_events_queue() {
   for (auto &it : state.get_spectators_map())
     send_events_to(next_event_to_send, &(it.second.get_address()));
 
-  lock.unlock();
+  state.get_map_mutex().unlock();
 }
 
 void ServerManager::send_datagram(std::vector<unsigned char> &msg,
