@@ -7,16 +7,16 @@
 class Event {
   uint32_t event_type;
   std::string *data;
+
 public:
-  Event(uint32_t type, std::string *data): event_type(type), data(data){}
-
-  std::string *&get_data_ptr(){
-    return data;
+  Event(uint32_t type, std::string *data) : event_type(type) {
+    this->data = data;
+    data->push_back(10);
   }
 
-  [[nodiscard]] uint32_t get_type() const{
-    return event_type;
-  }
+  std::string *&get_data_ptr() { return data; }
+
+  [[nodiscard]] uint32_t get_type() const { return event_type; }
 };
 
 #endif // EVENT_H

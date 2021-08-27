@@ -91,6 +91,6 @@ bool ClientState::valid_game_number(uint32_t game_number) {
 void ClientState::send_event_to_gui(Event event, int socket) {
   if (event.get_type() == GAME_OVER_EVENT)
     return;
-  std::cerr << "SENDING TO GUI: " << *event.get_data_ptr() << "\n";
+  std::cerr << "SENDING (" << socket << ") TO GUI: |" << *event.get_data_ptr();
   send(socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(), 0);
 }

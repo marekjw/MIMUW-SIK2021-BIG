@@ -109,7 +109,8 @@ int main(int argc, char **argv) {
   ClientManager client{state, gui_buffer, game_socket, gui_socket,
                        game_addrinfo};
 
-  client.start();
+  std::cout << "Everything ok: " << game_socket << " gui:" << gui_socket
+            << "\n";
 
-  std::cout << "Everything ok: " << game_socket << " " << gui_socket << "\n";
+  client.start();
 }
