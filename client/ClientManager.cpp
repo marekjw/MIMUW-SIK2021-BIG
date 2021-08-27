@@ -229,8 +229,10 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
 }
 void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
                                       uint32_t event_no) {
-  if (start - end != PIXEL_EVENT_LEN)
-    fatal("Invalid data in PIXEL event");
+  if (end - start != PIXEL_EVENT_LEN) {
+    fatal("Invalid len in PIXEL event, got %d, expected %d", end - start,
+          PIXEL_EVENT_LEN);
+  }
   // TODO validate data
   uint32_t x, y;
   unsigned char player_no = server_buffer[start++];
