@@ -6,7 +6,7 @@ uint32_t CRC::calculate(unsigned char *it, const unsigned char *end) {
   uint8_t octet;
   for (; it != end; ++it) {
     octet = *it;
-    crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 & UINT32_MAX) ^ octet];
+    crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ octet) & 0xFF];
   }
 
   return crc32;

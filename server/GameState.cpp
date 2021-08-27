@@ -189,6 +189,8 @@ void GameState::reset() {
   clients_mutex.lock();
   game_on_mutex.lock();
 
+  std::cerr << "\n\n\nRESETTING THE GAME\n\n\n";
+
   players_sorted.clear();
   players.clear();
   spectators.clear();

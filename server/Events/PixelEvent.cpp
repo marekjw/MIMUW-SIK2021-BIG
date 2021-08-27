@@ -8,4 +8,5 @@ PixelEvent::PixelEvent(int number, std::pair<int, int> position) {
   data.push_back(number);                        // only one byte
   util::serialize(data, htonl(position.second)); // y
   util::serialize(data, htonl(position.first));  // x
+  calculate_crc();
 }

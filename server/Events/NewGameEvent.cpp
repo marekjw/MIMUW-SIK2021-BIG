@@ -20,4 +20,5 @@ NewGameEvent::NewGameEvent(std::vector<PlayerState> &players, uint32_t max_x,
   data.push_back(NEW_GAME_EVENT);
 
   data.insert(data.end(), temp.begin(), temp.end());
+  calculate_crc();
 }
