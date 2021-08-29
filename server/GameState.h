@@ -15,7 +15,7 @@
 
 class GameState {
 private:
-  std::vector<std::vector<bool>> pixels;
+  std::vector<std::vector<bool>> pixels; //[x][y]
 
   uint32_t max_x, max_y;
   unsigned long ready_players_no, players_alive_no;
@@ -65,7 +65,7 @@ public:
 
   /**
    * The given pixel becomes invalid
-   * @param pixel - a valid pixel
+   * @param pixel - a valid pixel (x,y)
    */
   void eat_pixel(std::pair<int, int> pixel);
 

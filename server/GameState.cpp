@@ -42,7 +42,11 @@ bool GameState::is_game_on() {
   game_on_mutex.unlock();
   return res;
 }
-
+/**
+ * Checks if pixel is valid
+ * @param position - a pair x, y
+ * @return true if the pixel is valid
+ */
 bool GameState::pixel_valid(std::pair<int, int> position) {
   if (position.first < 0 || position.second < 0)
     return false;
