@@ -127,6 +127,16 @@ bool GameState::update_player_(const Datagram &datagram,
   auto ptr = players.find({res, port});
 
   if (ptr == players.end()) {
+    game_on_mutex.lock();
+    bool is_game_on = the_game_is_on;
+    game_on_mutex.unlock();
+
+    if (is_game_on) {
+      // cannot add new player during game
+      // creating new spectator instead
+      return update_spectator_(datagram, from, res, port);
+    }
+
     if (MAX_PLAYERS <= players.size()) {
       std::cerr << "Cannot add new player - player limit would be exceeded\n";
       return false;

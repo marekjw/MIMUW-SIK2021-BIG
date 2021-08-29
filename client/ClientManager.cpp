@@ -209,7 +209,6 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
   // TODO a co z danymi bez sensu
   std::string name;
   while (server_buffer[start] != '\0' && start < end) {
-    std::cerr << "STUCK IN A WHILE LOL " << start << " " << end << "\n";
     for (; start < end && server_buffer[start] != ' ' &&
            server_buffer[start] != '\0';
          ++start) {
@@ -218,6 +217,7 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
     ++start;
     if (util::is_name_valid(name) && !name.empty()) {
       state.new_player(name);
+      name.clear();
     }
   }
 

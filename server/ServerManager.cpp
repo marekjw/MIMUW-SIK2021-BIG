@@ -82,7 +82,7 @@ void ServerManager::start() {
       continue;
     }
 
-    if (state.is_game_on() || datagram.get_name().empty()) {
+    if (datagram.get_name().empty()) {
       if (state.update_spectator(datagram, &from)) {
         send_events_to(datagram.get_next_expected_event_no(), &from);
       }
