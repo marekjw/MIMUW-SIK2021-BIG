@@ -201,9 +201,9 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
 void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
                                          uint32_t event_no) {
   state.play_game(); // TODO numer gry
-  uint32_t max_y = util::read_uint32_from_network_stream(server_buffer + start);
-  start += 4;
   uint32_t max_x = util::read_uint32_from_network_stream(server_buffer + start);
+  start += 4;
+  uint32_t max_y = util::read_uint32_from_network_stream(server_buffer + start);
   start += 4;
 
   // TODO a co z danymi bez sensu
@@ -239,9 +239,9 @@ void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
   // TODO validate data
   uint32_t x, y;
   unsigned char player_no = server_buffer[start++];
-  y = util::read_uint32_from_network_stream(server_buffer + start);
-  start += 4;
   x = util::read_uint32_from_network_stream(server_buffer + start);
+  start += 4;
+  y = util::read_uint32_from_network_stream(server_buffer + start);
   auto data = new std::string("PIXEL ");
   data->append(std::to_string(x) + ' ');
   data->append(std::to_string(y) + ' ');
