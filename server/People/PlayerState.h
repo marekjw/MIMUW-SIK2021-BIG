@@ -83,6 +83,8 @@ public:
 
   [[nodiscard]] int get_x() const { return x; }
   [[nodiscard]] int get_y() const { return y; }
+
+  [[nodiscard]] bool is_connected() const { return connected; }
 };
 
 #endif

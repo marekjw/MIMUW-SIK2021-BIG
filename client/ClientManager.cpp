@@ -209,11 +209,13 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
   // TODO a co z danymi bez sensu
   std::string name;
   while (server_buffer[start] != '\0' && start < end) {
+    std::cerr << "STUCK IN A WHILE LOL " << start << " " << end << "\n";
     for (; start < end && server_buffer[start] != ' ' &&
            server_buffer[start] != '\0';
          ++start) {
       name.push_back(server_buffer[start]);
     }
+    ++start;
     if (util::is_name_valid(name) && !name.empty()) {
       state.new_player(name);
     }
@@ -227,6 +229,7 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
   state.append_player_names(*data);
   state.add_event(event_no, {NEW_GAME_EVENT, data});
 }
+
 void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
                                       uint32_t event_no) {
   if (end - start != PIXEL_EVENT_LEN) {

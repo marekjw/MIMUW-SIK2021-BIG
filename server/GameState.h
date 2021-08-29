@@ -19,12 +19,12 @@ private:
 
   uint32_t max_x, max_y;
   unsigned long ready_players_no, players_alive_no;
-  std::vector<PlayerState> players_sorted;
+  std::vector<PlayerState *> players_sorted;
   uint32_t game_id{};
 
   bool the_game_is_on;
 
-  std::map<std::pair<std::string, int>, PlayerState *> players;
+  std::map<std::pair<std::string, int>, PlayerState> players;
 
   std::map<std::pair<std::string, int>, Person> spectators;
 
@@ -59,7 +59,7 @@ public:
    * Is not thread safe
    * @return reference to the players_sorted vector
    */
-  std::vector<PlayerState> &get_players() { return players_sorted; }
+  std::vector<PlayerState *> &get_players() { return players_sorted; }
 
   bool pixel_valid(std::pair<int, int> position);
 
@@ -97,11 +97,11 @@ public:
    */
   bool update_player(const Datagram &datagram, const sockaddr_storage *address);
 
-  void kill_player(PlayerState &player);
+  void kill_player(PlayerState *player);
 
   std::mutex &get_map_mutex() { return clients_mutex; }
 
-  const std::map<std::pair<std::string, int>, PlayerState *> &
+  const std::map<std::pair<std::string, int>, PlayerState > &
   get_players_map() {
     return players;
   };

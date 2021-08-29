@@ -36,11 +36,11 @@ enum msg_from_gui {
 #define MAX_DATA_FROM_SERVER_LEN 550
 
 // number of players who have to be ready in order for the game to begin
-#define MIN_AMOUNT_OF_PLAYERS 1
+#define MIN_AMOUNT_OF_PLAYERS 2
 #define MAX_PLAYERS 25
 
 #define MILISECOND_IN_2_SECONDS 2000
 
-#define MIN_ALIVE_PLAYERS 0
+#define MIN_ALIVE_PLAYERS 1
 
 #endif // CONSTANTS_H

@@ -13,22 +13,25 @@ void GameState::set_up_new_game() {
   game_id = rng();
   the_game_is_on = true;
 
+  for (auto &it : players) {
+    players_sorted.push_back(&it.second);
+  }
+
   players_alive_no = players_sorted.size();
 
   std::sort(players_sorted.begin(), players_sorted.end(),
-            [](const PlayerState &a, const PlayerState &b) {
-              return a.get_name() < b.get_name();
+            [](const PlayerState *a, const PlayerState *b) {
+              return a->get_name() < b->get_name();
             });
 
   int count = 0;
-  for (auto &player : players_sorted) {
-    *(player.get_map_pointer()) = &player;
-    player.set_position(rng() % max_x + 0.5, rng() % max_y + 0.5, rng() % 360);
-    player.set_number(count++);
-    if (pixels[player.get_x()][player.get_y()]) {
-      pixels[player.get_x()][player.get_y()] = false;
+  for (auto ptr : players_sorted) {
+    ptr->set_position(rng() % max_x + 0.5, rng() % max_y + 0.5, rng() % 360);
+    ptr->set_number(count++);
+    if (!pixel_valid(ptr->get_position())) {
+      kill_player(ptr);
     } else {
-      kill_player(player);
+      eat_pixel(ptr->get_position());
     }
   }
 
@@ -130,12 +133,10 @@ bool GameState::update_player_(const Datagram &datagram,
     }
 
     std::cerr << "Adding new player: " << datagram.get_name() << std::endl;
-    players_sorted.emplace_back(*from, datagram);
-    auto it = players.insert({{res, port}, &players_sorted.back()});
-    players_sorted.back().set_map_pointer(&(it.first->second));
+    auto it = players.insert({{res, port}, {*from, datagram}});
 
     if (datagram.get_turn_direction() != STRAIGHT) {
-      players_sorted.back().make_ready();
+      it.first->second.make_ready();
       game_on_mutex.lock();
       ++ready_players_no;
       game_on_mutex.unlock();
@@ -146,18 +147,18 @@ bool GameState::update_player_(const Datagram &datagram,
   } else {
 
     // player exists
-    if (ptr->second->get_session_id() <= datagram.get_session_id()) {
-      ptr->second->stamp();
-      ptr->second->set_turn_direction(datagram.get_turn_direction());
-      if (ptr->second->get_session_id() < datagram.get_session_id()) {
-        ptr->second->update_session_id(datagram.get_session_id());
+    if (ptr->second.get_session_id() <= datagram.get_session_id()) {
+      ptr->second.stamp();
+      ptr->second.set_turn_direction(datagram.get_turn_direction());
+      if (ptr->second.get_session_id() < datagram.get_session_id()) {
+        ptr->second.update_session_id(datagram.get_session_id());
       }
 
       game_on_mutex.lock();
       if (!the_game_is_on) {
-        if (!ptr->second->is_ready() &&
+        if (!ptr->second.is_ready() &&
             datagram.get_turn_direction() != STRAIGHT) {
-          ptr->second->make_ready();
+          ptr->second.make_ready();
           ++ready_players_no;
           std::cerr << "Now there are " << ready_players_no
                     << " players ready\n";
@@ -179,13 +180,13 @@ unsigned long GameState::ready_players() {
 }
 unsigned long GameState::players_alive() const { return players_alive_no; }
 
-void GameState::kill_player(PlayerState &player) {
-  if (!player.is_alive())
+void GameState::kill_player(PlayerState *player) {
+  if (!player->is_alive())
     return;
 
-  std::cerr << "Killing player " << player.get_name() << "\n";
+  std::cerr << "Killing player " << player->get_name() << "\n";
 
-  player.kill();
+  player->kill();
   --players_alive_no;
 }
 
@@ -193,7 +194,7 @@ void GameState::reset() {
   clients_mutex.lock();
   game_on_mutex.lock();
 
-  std::cerr << "\n\n\nRESETTING THE GAME\n\n\n";
+  std::cerr << "\nRESETTING THE GAME\n\n";
 
   players_sorted.clear();
   players.clear();
@@ -215,10 +216,10 @@ void GameState::reset() {
 
 void GameState::disconnect_inactive_ones() {
   clients_mutex.lock();
-  for (auto it = players.cbegin(); it != players.cend();) {
-    if (it->second->should_disconnect()) {
-      it->second->disconnect();
-      std::cerr << "Disconnect player: " << it->second->get_name() << std::endl;
+  for (auto it = players.begin(); it != players.end();) {
+    if (it->second.should_disconnect()) {
+      it->second.disconnect();
+      std::cerr << "Disconnect player: " << it->second.get_name() << std::endl;
       it = players.erase(it);
     } else {
       ++it;
@@ -241,8 +242,8 @@ bool GameState::can_start_game() {
   clients_mutex.lock();
 
   bool res = ready_players_no >= MIN_AMOUNT_OF_PLAYERS &&
-             std::all_of(players_sorted.begin(), players_sorted.end(),
-                         [](PlayerState &p) { return p.is_ready(); });
+             std::all_of(players.begin(), players.end(),
+                         [](auto p) { return p.second.is_ready(); });
 
   clients_mutex.unlock();
   return res;

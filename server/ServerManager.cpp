@@ -26,19 +26,21 @@ void ServerManager::start() {
     if (state.can_start_game()) {
       state.set_up_new_game();
 
-      add_event(NewGameEvent(events.size(), state.get_players(), state.get_max_y(),
-                             state.get_max_x()));
+      add_event(NewGameEvent(events.size(), state.get_players(),
+                             state.get_max_y(), state.get_max_x()));
 
       for (auto &player : state.get_players()) {
-        if (player.is_alive()) {
-          add_event(PixelEvent(events.size(), player.get_position(), player.get_number()));
+        if (player->is_alive()) {
+          add_event(PixelEvent(events.size(), player->get_position(),
+                               player->get_number()));
         } else {
-          add_event(PlayerEliminatedEvent(events.size(), player.get_number()));
+          add_event(PlayerEliminatedEvent(events.size(), player->get_number()));
         }
       }
 
       // check if the game is over
       if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
+        std::cerr << "GAME ENDED BEFORE IT EVEN STARTED\n";
         add_event(GameOverEvent(events.size()));
         send_events_queue();
       } else {
@@ -100,28 +102,30 @@ void ServerManager::game_loop() {
     state.disconnect_inactive_ones();
 
     for (auto &player : state.get_players()) {
-      if (!player.is_alive())
+      if (!player->is_alive())
         continue;
 
-      player.update_direction();
-      if (!player.move())
+      player->update_direction();
+      if (!player->move())
         continue;
 
-      if (!state.pixel_valid(player.get_position())) {
+      if (!state.pixel_valid(player->get_position())) {
         // eliminate the player
 
         state.kill_player(player);
 
-        add_event(PlayerEliminatedEvent(events.size(), player.get_number()));
+        add_event(PlayerEliminatedEvent(events.size(), player->get_number()));
         // check if the game is over
         if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
+          std::cerr << "ONLY 1 PERSON ALIVE\n";
           add_event(GameOverEvent(events.size()));
           send_events_queue();
           return;
         }
       } else {
-        state.eat_pixel(player.get_position());
-        add_event(PixelEvent(events.size(), player.get_position(), player.get_number()));
+        state.eat_pixel(player->get_position());
+        add_event(PixelEvent(events.size(), player->get_position(),
+                             player->get_number()));
       }
     }
     send_events_queue();
@@ -139,8 +143,11 @@ void ServerManager::send_events_queue() {
 
   state.get_map_mutex().lock();
 
-  for (auto &it : state.get_players_map())
-    send_events_to(next_event_to_send, &it.second->get_address());
+  for (auto &it : state.get_players_map()) {
+    if (it.second.is_connected()) {
+      send_events_to(next_event_to_send, &it.second.get_address());
+    }
+  }
 
   for (auto &it : state.get_spectators_map())
     send_events_to(next_event_to_send, &(it.second.get_address()));
