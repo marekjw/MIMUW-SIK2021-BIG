@@ -29,6 +29,8 @@ private:
   bool game_no_set;
   uint32_t game_no;
 
+  int gui_socket;
+
   std::set<uint32_t> used_game_ids;
 
   bool left_key_pressed, right_key_pressed, game = true;
@@ -46,11 +48,11 @@ private:
   std::mutex event_no_mutex;
 
 public:
-  explicit ClientState(std::string name, uint64_t session_id)
+  explicit ClientState(std::string name, uint64_t session_id, int gui_socket)
       : name(std::move(name)), turn_direction(0), next_expected_event_no(0),
         next_event_to_send_no(0), session_id(session_id), game_no(0),
-        game_no_set(false), left_key_pressed(false), right_key_pressed(false),
-        n_session_id(htobe64(session_id)){};
+        gui_socket(gui_socket), game_no_set(false), left_key_pressed(false),
+        right_key_pressed(false), n_session_id(htobe64(session_id)){};
 
   [[nodiscard]] short get_turn_direction() const { return turn_direction; }
 
@@ -88,7 +90,7 @@ public:
    * Starts sending messages from the queue to the specified socket
    * @param socket
    */
-  [[noreturn]] void dispatch_queue(int socket);
+  [[noreturn]] void dispatch_queue();
 
   /**
    * Adds event to the event queue
@@ -120,7 +122,8 @@ public:
    * @param event - an event to be sent
    * @param socket - socket over which an event is to be sent
    */
-  static void send_event_to_gui(Event event, int socket);
+  void send_event_to_gui(Event event) const;
+  void finish_sending_events();
 };
 
 // TODO remember to delete strings, cuz they're only pointers rn

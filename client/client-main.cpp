@@ -85,8 +85,6 @@ int main(int argc, char **argv) {
   printf("%s, %s, %s, %s, %s\n", game_address.data(), name.data(),
          gui_address.data(), game_port.data(), gui_port.data());
 
-  ClientState state{name, session_id};
-
   addrinfo *game_addrinfo, *gui_addrinfo, hints;
 
   memset(&hints, 0, sizeof hints);
@@ -103,6 +101,7 @@ int main(int argc, char **argv) {
   hints.ai_protocol = IPPROTO_TCP;
   gui_socket = setup_connection(gui_address.data(), gui_port.data(), &hints,
                                 gui_addrinfo);
+  ClientState state{name, session_id, gui_socket};
 
   StreamBuffer gui_buffer{gui_socket};
 

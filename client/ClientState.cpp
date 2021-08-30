@@ -32,7 +32,7 @@ void ClientState::update_direction(msg_from_gui event) {
     break;
   }
 }
-[[noreturn]] void ClientState::dispatch_queue(int socket) {
+[[noreturn]] void ClientState::dispatch_queue() {
   std::unique_lock<std::mutex> lock(queue_mutex);
 
   do {
@@ -45,7 +45,7 @@ void ClientState::update_direction(msg_from_gui event) {
 
       lock.unlock();
 
-      send_event_to_gui(event_record.second, socket);
+      send_event_to_gui(event_record.second);
 
       // free the memory
       delete event_record.second.get_data_ptr();
@@ -103,16 +103,18 @@ game_number_validity ClientState::valid_game_number(uint32_t game_number) {
 
   return INVALID;
 }
-void ClientState::send_event_to_gui(Event event, int socket) {
+void ClientState::send_event_to_gui(Event event) const {
   if (event.get_type() == GAME_OVER_EVENT)
     return;
-  std::cerr << "SENDING (" << socket << ") TO GUI: |" << *event.get_data_ptr();
-  send(socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(), 0);
+  std::cerr << "SENDING TO GUI: |" << *event.get_data_ptr();
+  send(gui_socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(), 0);
 }
 void ClientState::reset() {
   event_no_mutex.lock();
   queue_mutex.lock();
   player_vector_mutex.lock();
+
+  finish_sending_events();
   next_event_to_send_no = 0;
 
   players_names.clear();
@@ -127,4 +129,12 @@ void ClientState::reset() {
   player_vector_mutex.unlock();
   queue_mutex.unlock();
   event_no_mutex.unlock();
+}
+
+void ClientState::finish_sending_events() {
+  while (!queue.empty()){
+    auto event_record = *queue.begin();
+    queue.erase(queue.begin());
+    send_event_to_gui(event_record.second);
+  }
 }

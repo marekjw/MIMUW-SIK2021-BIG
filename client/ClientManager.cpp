@@ -16,7 +16,7 @@ void ClientManager::start() {
       std::thread(&ClientManager::server_to_gui, this),
       std::thread(&ClientManager::gui_to_client, this),
       std::thread(&ClientManager::client_to_server, this),
-      std::thread(&ClientState::dispatch_queue, &state, gui_socket),
+      std::thread(&ClientState::dispatch_queue, &state),
   };
   for (auto &t : threads)
     t.join();

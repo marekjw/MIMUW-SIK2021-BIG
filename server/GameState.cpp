@@ -127,9 +127,20 @@ bool GameState::update_player_(const Datagram &datagram,
   auto ptr = players.find({res, port});
 
   if (ptr == players.end()) {
-    game_on_mutex.lock();
+
+    auto check_name = std::find_if(
+        players.begin(), players.end(),
+        [&datagram](
+            const std::pair<std::pair<std::string, int>, PlayerState> &p) {
+          return p.second.get_name() == datagram.get_name();
+        });
+
+    if (check_name != players.end()) {
+      // there exists a player with given name
+      return false;
+    }
+
     bool is_game_on = the_game_is_on;
-    game_on_mutex.unlock();
 
     if (is_game_on) {
       // cannot add new player during game
@@ -230,6 +241,13 @@ void GameState::disconnect_inactive_ones() {
     if (it->second.should_disconnect()) {
       it->second.disconnect();
       std::cerr << "Disconnect player: " << it->second.get_name() << std::endl;
+      game_on_mutex.lock();
+
+      if (it->second.is_ready() && !the_game_is_on) {
+        --ready_players_no;
+      }
+      game_on_mutex.unlock();
+
       it = players.erase(it);
     } else {
       ++it;
