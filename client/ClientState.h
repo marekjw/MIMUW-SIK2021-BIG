@@ -21,7 +21,8 @@ private:
   std::atomic<short> turn_direction;
   uint32_t next_expected_event_no; // number of the next expected event to be
                                    // received from the server
-  uint32_t next_event_to_send_no;  // number of the next event to send to gui
+  uint32_t next_event_to_send_no; // number of the next event to send to gui, is
+                                  // used by multiple threads
   uint64_t session_id{}, n_session_id;
 
   bool game_no_set;
@@ -38,6 +39,9 @@ private:
   std::mutex queue_mutex;
   std::condition_variable cv;
 
+  std::mutex player_vector_mutex;
+  std::mutex event_no_mutex;
+
 public:
   explicit ClientState(std::string name, uint64_t session_id)
       : name(std::move(name)), turn_direction(0), next_expected_event_no(0),
@@ -47,11 +51,20 @@ public:
 
   [[nodiscard]] short get_turn_direction() const { return turn_direction; }
 
-  void set_next_expected_event_no(uint32_t no) { next_expected_event_no = no; }
-
-  [[nodiscard]] uint32_t get_next_expected_event_no() const {
-    return next_expected_event_no;
+  void set_next_expected_event_no(uint32_t no) {
+    event_no_mutex.lock();
+    next_expected_event_no = std::max(no, next_expected_event_no);
+    event_no_mutex.unlock();
   }
+
+  [[nodiscard]] uint32_t get_next_expected_event_no() {
+    event_no_mutex.lock();
+    uint32_t res = next_expected_event_no;
+    event_no_mutex.unlock();
+    return res;
+  }
+
+  void reset();
 
   [[nodiscard]] uint64_t get_session_id() const { return session_id; }
 
@@ -90,7 +103,7 @@ public:
    * @param index
    * @return the name of the index-th player
    */
-  const std::string &get_player_name(size_t index);
+  std::string get_player_name(size_t index);
 
   /**
    * Appends all the player names to the res string
@@ -100,7 +113,7 @@ public:
    */
   void append_player_names(std::string &res);
 
-  [[nodiscard]] uint64_t get_n_session_id() const {return n_session_id;}
+  [[nodiscard]] uint64_t get_n_session_id() const { return n_session_id; }
 
   /**
    * sends an event to gui, using the socket

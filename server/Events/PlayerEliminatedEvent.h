@@ -5,7 +5,8 @@
 
 class PlayerEliminatedEvent : public Event {
 private:
-  static const uint32_t len = 5;
+  static const uint32_t len = 6;
+
 public:
   PlayerEliminatedEvent(uint32_t event_no, int number);
 };

@@ -22,17 +22,12 @@ void ClientManager::start() {
     t.join();
 }
 
-void ClientManager::server_to_gui() {
+[[noreturn]] void ClientManager::server_to_gui() {
   while (true) {
-
     // read data from the server
     ssize_t size = recv(game_socket, server_buffer, BUFFER_SIZE, 0);
     if (size < 0)
       syserr("Could not read from server socket");
-
-    // TODO czy na pewno jest rozłączane
-    if (size == 0)
-      break;
 
     parse_server_buffer(size);
   }
@@ -180,9 +175,14 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
     break;
   case PLAYER_ELIMINATED_EVENT:
     state.set_next_expected_event_no(event_no + 1);
+    std::cerr << "PLAYER ELIMINATED EVENT\n";
     parse_player_eliminated_event(counter, end, event_no);
     break;
   case GAME_OVER_EVENT:
+    std::cerr << "GAME OVER EVENT\n";
+    if (len != GAME_OVER_LEN) {
+      fatal("Invalid GAME OVER LEN: got %d, expected %d\n", len, GAME_OVER_LEN);
+    }
     state.set_next_expected_event_no(event_no + 1);
     handle_game_over_event(event_no);
     break;
@@ -217,6 +217,9 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
     ++start;
     if (util::is_name_valid(name) && !name.empty()) {
       state.new_player(name);
+      if (!util::is_name_valid(name)) {
+        fatal("Invalid name in NEW GAME EVENT\n");
+      }
       name.clear();
     }
   }
@@ -252,7 +255,7 @@ void ClientManager::parse_pixel_event(ssize_t start, ssize_t end,
 void ClientManager::parse_player_eliminated_event(ssize_t start, ssize_t end,
                                                   uint32_t event_no) {
 
-  if (start - end != PLAYER_ELIMINATED_EVENT_LEN)
+  if (end - start != PLAYER_ELIMINATED_EVENT_LEN)
     fatal("Invalid data in PLAYER_ELIMINATED event");
 
   // TODO validate data
@@ -265,4 +268,5 @@ void ClientManager::handle_game_over_event(uint32_t event_no) {
   // TODO validate data
   auto data = new std::string();
   state.add_event(event_no, {GAME_OVER_EVENT, data});
+  state.reset();
 }

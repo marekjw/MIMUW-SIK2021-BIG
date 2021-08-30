@@ -4,7 +4,9 @@
 #include <sys/socket.h>
 
 void ClientState::new_player(const std::string &new_player_name) {
+  player_vector_mutex.lock();
   players_names.push_back(new_player_name);
+  player_vector_mutex.unlock();
 }
 
 void ClientState::game_over() {
@@ -71,21 +73,33 @@ void ClientState::add_event(uint32_t event_no, Event event) {
   cv.notify_one();
 }
 
-const std::string &ClientState::get_player_name(size_t index) {
+std::string ClientState::get_player_name(size_t index) {
+  player_vector_mutex.lock();
   if (index >= players_names.size())
     fatal("Data makes no sense - player number out of bonds");
-  return players_names[index];
+  std::string res = players_names[index];
+  player_vector_mutex.unlock();
+  return res;
 }
 
 void ClientState::append_player_names(std::string &res) {
+  player_vector_mutex.lock();
   for (auto const &n : players_names) {
     res.push_back(' ');
     res.append(n);
   }
+  player_vector_mutex.unlock();
 }
 
 bool ClientState::valid_game_number(uint32_t game_number) {
-  // TODO
+  return true;
+
+  if (!game_no_set) {
+    game_no = game_number;
+    game_no_set = true;
+    return true;
+  }
+
   return true;
 }
 void ClientState::send_event_to_gui(Event event, int socket) {
@@ -93,4 +107,23 @@ void ClientState::send_event_to_gui(Event event, int socket) {
     return;
   std::cerr << "SENDING (" << socket << ") TO GUI: |" << *event.get_data_ptr();
   send(socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(), 0);
+}
+void ClientState::reset() {
+  event_no_mutex.lock();
+  queue_mutex.lock();
+  player_vector_mutex.lock();
+  next_event_to_send_no = 0;
+
+  players_names.clear();
+
+  for (auto it : queue) {
+    delete it.second.get_data_ptr();
+  }
+  queue.clear();
+
+  next_expected_event_no = 0;
+
+  player_vector_mutex.unlock();
+  queue_mutex.unlock();
+  event_no_mutex.unlock();
 }

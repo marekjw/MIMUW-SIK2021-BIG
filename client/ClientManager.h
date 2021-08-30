@@ -19,7 +19,7 @@ private:
   unsigned char server_buffer[BUFFER_SIZE]{};
   StreamBuffer &gui_buffer;
 
-  void server_to_gui();
+  [[noreturn]] void server_to_gui();
 
   [[noreturn]] void gui_to_client();
 

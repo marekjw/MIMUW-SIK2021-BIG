@@ -10,7 +10,7 @@ private:
 
 public:
   explicit GameOverEvent(uint32_t event_no) {
-    util::serialize(data, htonl(5));
+    util::serialize(data, htonl(len));
     util::serialize(data, htonl(event_no)); // 4 bytes
     data.push_back(GAME_OVER_EVENT);        // 1 byte
     calculate_crc();

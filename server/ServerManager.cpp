@@ -51,6 +51,7 @@ void ServerManager::start() {
       event_mutex.lock();
       state.reset();
       events.clear();
+      next_event_to_send = 0;
       event_mutex.unlock();
     }
     std::this_thread::sleep_until(wake_up_at);
@@ -172,6 +173,14 @@ void ServerManager::send_datagram(std::vector<unsigned char> &msg,
 
 void ServerManager::send_events_to(uint32_t next_expected_event,
                                    const sockaddr_storage *destination) {
+
+  event_mutex.lock();
+  if (next_expected_event >= events.size()) {
+    // don't send an empty datagram, with only game_id
+    event_mutex.unlock();
+    return;
+  }
+
   std::vector<unsigned char> msg;
   util::serialize(msg, htonl(state.get_game_id()));
   for (auto i = next_expected_event; i < events.size(); ++i) {
@@ -183,6 +192,7 @@ void ServerManager::send_events_to(uint32_t next_expected_event,
     msg.insert(msg.end(), events[i].get_data().begin(),
                events[i].get_data().end());
   }
+  event_mutex.unlock();
 
   send_datagram(msg, destination);
 }

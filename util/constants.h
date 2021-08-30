@@ -27,10 +27,12 @@ enum msg_from_gui {
 #define PLAYER_ELIMINATED_EVENT 2
 #define GAME_OVER_EVENT 3
 
-// lenghts of messages from server
+// lenghts of messages from server (minus event_no and event_type)
 #define PIXEL_EVENT_LEN 9
 #define PLAYER_ELIMINATED_EVENT_LEN 1
-#define GAME_OVER_LEN 0
+
+// lenght of game_over_event (including event_no and event_type)
+#define GAME_OVER_LEN 5
 
 #define MAX_CLIENT_DATAGRAM_LEN 33
 #define MAX_DATA_FROM_SERVER_LEN 550
