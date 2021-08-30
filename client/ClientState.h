@@ -12,6 +12,7 @@
 #include <map>
 #include <mutex>
 #include <pthread.h>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -27,6 +28,8 @@ private:
 
   bool game_no_set;
   uint32_t game_no;
+
+  std::set<uint32_t> used_game_ids;
 
   bool left_key_pressed, right_key_pressed, game = true;
 
@@ -66,14 +69,10 @@ public:
 
   void reset();
 
-  [[nodiscard]] uint64_t get_session_id() const { return session_id; }
-
   std::string &get_name() { return name; }
 
-  bool valid_game_number(uint32_t game_number);
+  game_number_validity valid_game_number(uint32_t game_number);
 
-  [[nodiscard]] bool is_playing() const { return game; }
-  void game_over();
   void play_game() { game = true; }
 
   void update_direction(msg_from_gui event);

@@ -109,8 +109,14 @@ ClientManager::~ClientManager() {
 
 void ClientManager::parse_server_buffer(ssize_t size) {
   uint32_t game_number = util::read_uint32_from_network_stream(server_buffer);
-  if (!state.valid_game_number(game_number)) {
-    std::cerr << "INVALID GAME NUMBER\n";
+
+  auto game_number_check = state.valid_game_number(game_number);
+  if (game_number_check == INVALID) {
+    // a datagram from one of the previous games
+    return;
+  } else if (game_number_check == VALID_NEW_GAME) {
+    // a new game has started
+    state.reset();
     return;
   }
 

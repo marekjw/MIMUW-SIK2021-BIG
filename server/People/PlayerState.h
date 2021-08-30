@@ -40,7 +40,11 @@ public:
   }
 
   inline void set_turn_direction(int new_turn_direction) {
-    turn_direction = new_turn_direction;
+    if (new_turn_direction == STRAIGHT ||
+        new_turn_direction == LEFT_DIRECTION ||
+        new_turn_direction == RIGHT_DIRECTION) {
+      turn_direction = new_turn_direction;
+    }
   }
 
   void update_direction();

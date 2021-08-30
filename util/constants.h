@@ -21,6 +21,12 @@ enum msg_from_gui {
   UNKNOWN,
 };
 
+enum game_number_validity{
+  VALID,
+  INVALID,
+  VALID_NEW_GAME,
+};
+
 // event types
 #define NEW_GAME_EVENT 0
 #define PIXEL_EVENT 1

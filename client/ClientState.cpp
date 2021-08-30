@@ -9,13 +9,6 @@ void ClientState::new_player(const std::string &new_player_name) {
   player_vector_mutex.unlock();
 }
 
-void ClientState::game_over() {
-  game = false;
-  // TODO cos z numerem gierki
-  // TODO numery expectd: send i ten drugi
-  players_names.clear(); // TODO czy na pewno?
-}
-
 void ClientState::update_direction(msg_from_gui event) {
 
   switch (event) {
@@ -91,16 +84,24 @@ void ClientState::append_player_names(std::string &res) {
   player_vector_mutex.unlock();
 }
 
-bool ClientState::valid_game_number(uint32_t game_number) {
-  return true;
-
+game_number_validity ClientState::valid_game_number(uint32_t game_number) {
   if (!game_no_set) {
-    game_no = game_number;
     game_no_set = true;
-    return true;
+    game_no = game_number;
+    return VALID;
   }
 
-  return true;
+  if (game_no == game_number) {
+    return VALID;
+  }
+
+  if (used_game_ids.find(game_number) == used_game_ids.end()) {
+    used_game_ids.insert(game_no);
+    game_no = game_number;
+    return VALID_NEW_GAME;
+  }
+
+  return INVALID;
 }
 void ClientState::send_event_to_gui(Event event, int socket) {
   if (event.get_type() == GAME_OVER_EVENT)
