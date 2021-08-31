@@ -36,7 +36,6 @@ public:
       : Person(addr, datagram.get_session_id()), ready(false), connected(true),
         name(datagram.get_name()), alive(true),
         turn_direction(datagram.get_turn_direction()), number(0) {
-    std::cerr << "New player: " << name << "\n";
   }
 
   inline void set_turn_direction(int new_turn_direction) {
@@ -64,7 +63,6 @@ public:
   void set_number(int id) { number = id; }
 
   void make_ready() {
-    std::cerr << "Player " << name << " ready!\n";
     ready = true;
   };
 

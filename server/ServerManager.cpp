@@ -40,7 +40,6 @@ void ServerManager::start() {
 
       // check if the game is over
       if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
-        std::cerr << "GAME ENDED BEFORE IT EVEN STARTED\n";
         add_event(GameOverEvent(events.size()));
         send_events_queue();
       } else {
@@ -62,7 +61,6 @@ void ServerManager::start() {
   struct sockaddr_storage from {};
   socklen_t from_len = sizeof from;
 
-  std::cerr << "Starting to listen\n";
   while (true) {
     // SOCKET: RECEIVNING THE DATA
     auto bytes_read = recvfrom(sockfd, buffer, BUFFER_SIZE, 0,
@@ -118,7 +116,6 @@ void ServerManager::game_loop() {
         add_event(PlayerEliminatedEvent(events.size(), player->get_number()));
         // check if the game is over
         if (state.players_alive() <= MIN_ALIVE_PLAYERS) {
-          std::cerr << "ONLY 1 PERSON ALIVE\n";
           add_event(GameOverEvent(events.size()));
           send_events_queue();
           return;

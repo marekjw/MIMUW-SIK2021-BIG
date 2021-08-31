@@ -106,7 +106,6 @@ game_number_validity ClientState::valid_game_number(uint32_t game_number) {
 void ClientState::send_event_to_gui(Event event) const {
   if (event.get_type() == GAME_OVER_EVENT)
     return;
-  std::cerr << "SENDING TO GUI: |" << *event.get_data_ptr();
   send(gui_socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(), 0);
 }
 void ClientState::reset() {

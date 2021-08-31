@@ -7,8 +7,6 @@ void GameState::set_up_new_game() {
   clients_mutex.lock();
   game_on_mutex.lock();
 
-  std::cerr << "Setting up new game\n";
-
   game_id = rng();
   the_game_is_on = true;
 
@@ -83,7 +81,6 @@ bool GameState::update_spectator_(const Datagram &datagram,
 
   if (ptr == spectators.end()) {
     // create a new spectator
-    std::cerr << "New specator\n";
     spectators.insert({{res, port}, Person{*from, datagram.get_session_id()}});
     return true;
   } else {
@@ -147,11 +144,9 @@ bool GameState::update_player_(const Datagram &datagram,
     }
 
     if (MAX_PLAYERS <= players.size()) {
-      std::cerr << "Cannot add new player - player limit would be exceeded\n";
       return false;
     }
 
-    std::cerr << "Adding new player: " << datagram.get_name() << std::endl;
     auto it = players.insert({{res, port}, {*from, datagram}});
 
     if (datagram.get_turn_direction() != STRAIGHT) {
@@ -179,8 +174,7 @@ bool GameState::update_player_(const Datagram &datagram,
             datagram.get_turn_direction() != STRAIGHT) {
           ptr->second.make_ready();
           ++ready_players_no;
-          std::cerr << "Now there are " << ready_players_no
-                    << " players ready\n";
+
         }
       }
       game_on_mutex.unlock();
@@ -197,8 +191,6 @@ void GameState::kill_player(PlayerState *player) {
   if (!player->is_alive())
     return;
 
-  std::cerr << "Killing player " << player->get_name() << "\n";
-
   player->kill();
   --players_alive_no;
 }
@@ -206,8 +198,6 @@ void GameState::kill_player(PlayerState *player) {
 void GameState::reset() {
   clients_mutex.lock();
   game_on_mutex.lock();
-
-  std::cerr << "\nRESETTING THE GAME\n\n";
 
   players_sorted.clear();
   players.clear();
@@ -232,7 +222,6 @@ void GameState::disconnect_inactive_ones() {
   for (auto it = players.begin(); it != players.end();) {
     if (it->second.should_disconnect()) {
       it->second.disconnect();
-      std::cerr << "Disconnect player: " << it->second.get_name() << std::endl;
       game_on_mutex.lock();
 
       if (it->second.is_ready() && !the_game_is_on) {
@@ -248,7 +237,6 @@ void GameState::disconnect_inactive_ones() {
 
   for (auto it = spectators.cbegin(); it != spectators.cend();) {
     if (it->second.should_disconnect()) {
-      std::cerr << "Disconnect specatator" << std::endl;
       it = spectators.erase(it);
     } else {
       ++it;
