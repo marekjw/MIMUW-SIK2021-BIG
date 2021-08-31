@@ -9,7 +9,7 @@ private:
 public:
   explicit Random(int seed): r(seed){}
 
-  int operator()();
+  uint32_t operator()();
 };
 
 #endif // RANDOM_H

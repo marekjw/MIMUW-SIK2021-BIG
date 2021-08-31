@@ -25,7 +25,11 @@ void GameState::set_up_new_game() {
 
   int count = 0;
   for (auto ptr : players_sorted) {
-    ptr->set_position(rng() % max_x + 0.5, rng() % max_y + 0.5, rng() % 360);
+    double x = (double)(rng() % max_x) + 0.5;
+    double y = (double)(rng() % max_y) + 0.5;
+    int direction = rng() % 360;
+
+    ptr->set_position(x, y, direction);
     ptr->set_number(count++);
     if (!pixel_valid(ptr->get_position())) {
       kill_player(ptr);
@@ -47,7 +51,8 @@ bool GameState::pixel_valid(std::pair<int, int> position) {
   if (position.first < 0 || position.second < 0)
     return false;
 
-  if (pixels.size() <= (long unsigned int) position.first || pixels[0].size() <=  (long unsigned int) position.second)
+  if (pixels.size() <= (long unsigned int)position.first ||
+      pixels[0].size() <= (long unsigned int)position.second)
     return false;
 
   return pixels[position.first][position.second];

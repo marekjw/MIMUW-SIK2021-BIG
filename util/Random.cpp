@@ -1,6 +1,6 @@
 #include "Random.h"
-int Random::operator()() {
-  int res = r;
-  r = (r * 279410273ull) % 4294967291ull;
+uint32_t Random::operator()() {
+  uint32_t res = r;
+  r = (r * 279410273) % 4294967291;
   return res;
 }

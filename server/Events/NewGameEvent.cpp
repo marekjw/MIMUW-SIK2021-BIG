@@ -14,10 +14,8 @@ NewGameEvent::NewGameEvent(uint32_t event_no,
   for (auto const &player : players) {
     temp.insert(temp.end(), player->get_name().begin(),
                 player->get_name().end());
-    temp.push_back(' ');
+    temp.push_back('\0');
   }
-  temp.back() = '\0';
-
   // + 5 ----> 1 byte event type, 4 bytes event no
   util::serialize(data, htonl((uint32_t)temp.size() + 5));
   util::serialize(data, htonl(event_no));

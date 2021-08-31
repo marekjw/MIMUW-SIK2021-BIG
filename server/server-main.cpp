@@ -10,7 +10,8 @@
 #include <unistd.h>
 
 int main(int argc, char **argv) {
-  int seed = time(NULL), turning_speed = 6, round_per_sec = 50, width = 640,
+  int seed = time(NULL);
+  int turning_speed = 6, round_per_sec = 50, width = 640,
       height = 480;
 
   std::string port_no{"2021"};
