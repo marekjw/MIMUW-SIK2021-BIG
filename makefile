@@ -18,5 +18,4 @@ screen-worms-server: $(SERVERSRC) $(SERVERHDR)
 	$(CXX) $(SERVERSRC) $(CFLAGS) -o screen-worms-server
 
 clean:
-	- rm *.o
-	- rm screen-worms-client
+	- rm *.o screen-worms-client screen-worms-server
