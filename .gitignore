@@ -3,3 +3,9 @@ cmake-build-debug
 debug
 screen-worms-client
 screen-worms-server
+tests_200.py
+tests_100.py
+tests_300.py
+communication.py
+test_config.ini
+__pycache__
