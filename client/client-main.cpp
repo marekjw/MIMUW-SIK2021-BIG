@@ -48,8 +48,7 @@ int main(int argc, char **argv) {
   int c;
 
   if (argc < 2) {
-    std::cerr << "No game address provided" << std::endl;
-    exit(1);
+    fatal("No game address provided");
   }
 
   game_address = std::string(argv[1]);
@@ -72,14 +71,12 @@ int main(int argc, char **argv) {
       gui_port = std::string(optarg);
       break;
     default:
-      std::cerr << "Invalid option" << std::endl;
-      exit(1);
+      fatal("Invalid option");
     }
   }
 
   if (!util::is_name_valid(name)) {
-    std::cerr << "Invalid player name" << std::endl;
-    exit(1);
+    fatal("Invalid name");
   }
 
   printf("%s, %s, %s, %s, %s\n", game_address.data(), name.data(),

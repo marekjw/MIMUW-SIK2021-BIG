@@ -38,8 +38,7 @@ int main(int argc, char **argv) {
       height = atoi(optarg);
       break;
     default:
-      std::cerr << "Invalid option" << std::endl;
-      exit(1);
+      fatal("Invalid option");
     }
   }
 
