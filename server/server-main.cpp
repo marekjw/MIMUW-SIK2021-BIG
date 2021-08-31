@@ -59,10 +59,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (argc != options_count + 1) {
-    fatal("Invalid arguments - no non-option arguments allowed");
-  }
-
   // check if values make sense
   if (seed == 0) {
     fatal("Seed cannot be equal to 0");
@@ -80,7 +76,7 @@ int main(int argc, char **argv) {
     fatal("Invalid dimensions");
   }
 
-  if (1000 < round_per_sec) {
+  if (round_per_sec <= 0 || 1000 < round_per_sec) {
     fatal("Invalid rounds per second");
   }
 
