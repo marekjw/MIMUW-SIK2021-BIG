@@ -35,8 +35,7 @@ public:
   PlayerState(sockaddr_storage addr, const Datagram &datagram)
       : Person(addr, datagram.get_session_id()), ready(false), connected(true),
         name(datagram.get_name()), alive(true),
-        turn_direction(datagram.get_turn_direction()), number(0) {
-  }
+        turn_direction(datagram.get_turn_direction()), number(0) {}
 
   inline void set_turn_direction(int new_turn_direction) {
     if (new_turn_direction == STRAIGHT ||
@@ -62,9 +61,7 @@ public:
 
   void set_number(int id) { number = id; }
 
-  void make_ready() {
-    ready = true;
-  };
+  void make_ready() { ready = true; };
 
   [[nodiscard]] bool is_ready() const { return ready; }
   [[nodiscard]] bool is_alive() const;

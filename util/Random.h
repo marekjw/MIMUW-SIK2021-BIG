@@ -7,7 +7,7 @@ private:
   uint64_t r;
 
 public:
-  explicit Random(int seed): r(seed){}
+  explicit Random(uint32_t seed): r(seed){}
 
   uint32_t operator()();
 };

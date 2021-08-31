@@ -38,7 +38,7 @@ private:
                       char *name, int port);
 
 public:
-  GameState(int width, int height, int turning_speed, Random &random)
+  GameState(uint32_t width, uint32_t height, int turning_speed, Random &random)
       : max_x(width), max_y(height), ready_players_no(0),
         the_game_is_on(false), players_alive_no(0), rng(random) {
     PlayerState::initialize(turning_speed);

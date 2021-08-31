@@ -9,38 +9,79 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+uint32_t parse_uint(char *string) {
+  char *endptr;
+  uint32_t res = strtoul(string, &endptr, 10);
+  if (errno != 0) {
+    syserr("Cannot parse number");
+  }
+
+  if (*endptr != ' ' && *endptr != 0) {
+    fatal("Cannot parse number");
+  }
+  return res;
+}
+
 int main(int argc, char **argv) {
-  int seed = time(NULL);
-  int turning_speed = 6, round_per_sec = 50, width = 640,
-      height = 480;
+  auto seed = (uint32_t)time(nullptr);
+  uint32_t round_per_sec = 50, width = 640, height = 480;
+  int turning_speed = 6;
 
   std::string port_no{"2021"};
 
   int c;
 
+  int options_count = 0;
+
   while ((c = getopt(argc, argv, "p:s:t:v:w:h:")) != -1) {
+    ++options_count;
     switch (c) {
     case 'p':
-      port_no = std::string(optarg);
+      port_no = std::to_string(parse_uint(optarg));
       break;
     case 's':
-      seed = atoi(optarg);
+      seed = parse_uint(optarg);
       break;
     case 't':
-      turning_speed = atoi(optarg);
+      turning_speed = (int)parse_uint(optarg);
       break;
     case 'v':
-      round_per_sec = atoi(optarg);
+      round_per_sec = parse_uint(optarg);
       break;
     case 'w':
-      width = atoi(optarg);
+      width = parse_uint(optarg);
       break;
     case 'h':
-      height = atoi(optarg);
+      height = parse_uint(optarg);
       break;
     default:
       fatal("Invalid option");
     }
+  }
+
+  if (argc != options_count + 1) {
+    fatal("Invalid arguments - no non-option arguments allowed");
+  }
+
+  // check if values make sense
+  if (seed == 0) {
+    fatal("Seed cannot be equal to 0");
+  }
+
+  if (turning_speed <= 0 || 360 < turning_speed) {
+    fatal("Invalid turning speed");
+  }
+
+  if (width == 0 || height == 0) {
+    fatal("Invalid dimensions");
+  }
+
+  if (5000 < width || 5000 < height) {
+    fatal("Invalid dimensions");
+  }
+
+  if (1000 < round_per_sec) {
+    fatal("Invalid rounds per second");
   }
 
   addrinfo *addr, hints;
