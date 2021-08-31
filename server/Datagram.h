@@ -1,6 +1,7 @@
 #ifndef DATAGRAM_H
 #define DATAGRAM_H
 
+#include "../util/constants.h"
 #include "../util/util.h"
 #include <cstdint>
 #include <string>
@@ -28,7 +29,11 @@ public:
   [[nodiscard]] const std::string &get_name() const { return name; }
 
   [[nodiscard]] uint64_t get_session_id() const { return session_id; }
-  bool invalid_crc();
+
+  [[nodiscard]] bool valid_turn_direction() const {
+    return turn_direction == STRAIGHT || turn_direction == LEFT_DIRECTION ||
+           turn_direction == RIGHT_DIRECTION;
+  }
 };
 
 #endif // DATAGRAM_H

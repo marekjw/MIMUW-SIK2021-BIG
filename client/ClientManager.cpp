@@ -186,7 +186,6 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
     state.set_next_expected_event_no(event_no + 1);
     handle_game_over_event(event_no);
     break;
-  default:
   }
   counter = end + CRC32LEN;
 }

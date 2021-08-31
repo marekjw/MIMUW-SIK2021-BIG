@@ -1,5 +1,8 @@
 #include "Datagram.h"
+#include "../util/CRC.h"
+#include "../util/err.h"
 #include "endian.h"
+
 
 Datagram::Datagram(unsigned char *buffer, long len) {
   session_id = be64toh(*(reinterpret_cast<uint64_t *>(buffer)));
@@ -13,4 +16,3 @@ Datagram::Datagram(unsigned char *buffer, long len) {
     name.push_back((char)buffer[i]);
   }
 }
-bool Datagram::invalid_crc() { return false; }

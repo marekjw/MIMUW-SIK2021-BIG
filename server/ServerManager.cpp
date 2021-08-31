@@ -70,6 +70,11 @@ void ServerManager::start() {
       warning("Could not read datagram");
       continue;
     }
+    if (bytes_read < MIN_CLIENT_DATAGRAM_LEN) {
+      warning("Datagram is too short");
+      continue;
+    }
+
     if (MAX_CLIENT_DATAGRAM_LEN < bytes_read) {
       warning("Datagram is too long");
       continue;
@@ -77,7 +82,7 @@ void ServerManager::start() {
 
     Datagram datagram{buffer, bytes_read};
 
-    if (datagram.invalid_crc() || datagram.invalid_name()) {
+    if (datagram.invalid_name() || !datagram.valid_turn_direction()) {
       continue;
     }
 

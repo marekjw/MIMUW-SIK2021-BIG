@@ -41,6 +41,7 @@ enum game_number_validity{
 #define GAME_OVER_LEN 5
 
 #define MAX_CLIENT_DATAGRAM_LEN 33
+#define MIN_CLIENT_DATAGRAM_LEN 13
 #define MAX_DATA_FROM_SERVER_LEN 550
 
 // number of players who have to be ready in order for the game to begin
