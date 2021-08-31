@@ -46,14 +46,6 @@ public:
         std::vector<std::vector<bool>>(width, std::vector<bool>(height, true));
   }
 
-  /**
-   * Returns the number of ready players_sorted
-   * - that is players_sorted, who sent turn_direction /= 0 at least once
-   * (thread safe)
-   * @return
-   */
-  unsigned long ready_players();
-
   void set_up_new_game();
   /**
    * Is not thread safe
@@ -73,8 +65,6 @@ public:
    * @return number of alive players_sorted
    */
   [[nodiscard]] unsigned long players_alive() const;
-
-  bool is_game_on();
 
   /**
    * Self explanatory

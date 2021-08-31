@@ -1,3 +1,5 @@
 cmake-build-debug
 .idea
 debug
+screen-worms-client
+screen-worms-server

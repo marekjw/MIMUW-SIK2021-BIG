@@ -1,5 +1,4 @@
 #include "GameState.h"
-#include "../util/util.h"
 
 #include <algorithm>
 #include <arpa/inet.h>
@@ -39,12 +38,6 @@ void GameState::set_up_new_game() {
   clients_mutex.unlock();
 }
 
-bool GameState::is_game_on() {
-  game_on_mutex.lock();
-  bool res = the_game_is_on;
-  game_on_mutex.unlock();
-  return res;
-}
 /**
  * Checks if pixel is valid
  * @param position - a pair x, y
@@ -54,7 +47,7 @@ bool GameState::pixel_valid(std::pair<int, int> position) {
   if (position.first < 0 || position.second < 0)
     return false;
 
-  if (pixels.size() <= position.first || pixels[0].size() <= position.second)
+  if (pixels.size() <= (long unsigned int) position.first || pixels[0].size() <=  (long unsigned int) position.second)
     return false;
 
   return pixels[position.first][position.second];
@@ -193,12 +186,6 @@ bool GameState::update_player_(const Datagram &datagram,
   return false;
 }
 
-unsigned long GameState::ready_players() {
-  game_on_mutex.lock();
-  auto res = ready_players_no;
-  game_on_mutex.unlock();
-  return res;
-}
 unsigned long GameState::players_alive() const { return players_alive_no; }
 
 void GameState::kill_player(PlayerState *player) {

@@ -98,7 +98,7 @@ void ClientManager::send_to_server() {
   std::copy(state.get_name().begin(), state.get_name().end(),
             std::back_inserter(message));
   if (sendto(game_socket, message.data(), message.size(), 0,
-             server_addr->ai_addr, server_addr->ai_addrlen) < message.size())
+             server_addr->ai_addr, server_addr->ai_addrlen) < (long int)message.size())
     syserr("Could not send datagram to server");
 }
 
@@ -206,7 +206,6 @@ void ClientManager::parse_event(ssize_t &counter, ssize_t size, bool &crc_ok) {
  */
 void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
                                          uint32_t event_no) {
-  state.play_game(); // TODO numer gry
   uint32_t max_x = util::read_uint32_from_network_stream(server_buffer + start);
   start += 4;
   uint32_t max_y = util::read_uint32_from_network_stream(server_buffer + start);
@@ -218,7 +217,7 @@ void ClientManager::parse_new_game_event(ssize_t start, ssize_t end,
     for (; start < end && server_buffer[start] != ' ' &&
            server_buffer[start] != '\0';
          ++start) {
-      name.push_back(server_buffer[start]);
+      name.push_back((char)server_buffer[start]);
     }
     ++start;
     if (util::is_name_valid(name) && !name.empty()) {

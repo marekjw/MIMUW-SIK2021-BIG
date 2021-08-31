@@ -24,7 +24,7 @@ private:
                                    // received from the server
   uint32_t next_event_to_send_no; // number of the next event to send to gui, is
                                   // used by multiple threads
-  uint64_t session_id{}, n_session_id;
+  uint64_t n_session_id;
 
   bool game_no_set;
   uint32_t game_no;
@@ -33,7 +33,7 @@ private:
 
   std::set<uint32_t> used_game_ids;
 
-  bool left_key_pressed, right_key_pressed, game = true;
+  bool left_key_pressed, right_key_pressed;
 
   std::vector<std::string> players_names;
 
@@ -50,7 +50,7 @@ private:
 public:
   explicit ClientState(std::string name, uint64_t session_id, int gui_socket)
       : name(std::move(name)), turn_direction(0), next_expected_event_no(0),
-        next_event_to_send_no(0), session_id(session_id), game_no(0),
+        next_event_to_send_no(0), game_no(0),
         gui_socket(gui_socket), game_no_set(false), left_key_pressed(false),
         right_key_pressed(false), n_session_id(htobe64(session_id)){};
 
@@ -74,8 +74,6 @@ public:
   std::string &get_name() { return name; }
 
   game_number_validity valid_game_number(uint32_t game_number);
-
-  void play_game() { game = true; }
 
   void update_direction(msg_from_gui event);
 
