@@ -69,7 +69,8 @@ void ClientState::add_event(uint32_t event_no, Event event) {
 std::string ClientState::get_player_name(size_t index) {
   player_vector_mutex.lock();
   if (index >= players_names.size())
-    fatal("Data makes no sense - player number out of bonds");
+    fatal("Data makes no sense - player number out of bonds: %d %d", index,
+          players_names.size());
   std::string res = players_names[index];
   player_vector_mutex.unlock();
   return res;
@@ -106,7 +107,8 @@ game_number_validity ClientState::valid_game_number(uint32_t game_number) {
 void ClientState::send_event_to_gui(Event event) const {
   if (event.get_type() == GAME_OVER_EVENT)
     return;
-  send(gui_socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(), 0);
+  send(gui_socket, event.get_data_ptr()->data(), event.get_data_ptr()->size(),
+       0);
 }
 void ClientState::reset() {
   event_no_mutex.lock();
@@ -131,7 +133,7 @@ void ClientState::reset() {
 }
 
 void ClientState::finish_sending_events() {
-  while (!queue.empty()){
+  while (!queue.empty()) {
     auto event_record = *queue.begin();
     queue.erase(queue.begin());
     send_event_to_gui(event_record.second);

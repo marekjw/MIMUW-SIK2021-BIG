@@ -98,7 +98,8 @@ void ClientManager::send_to_server() {
   std::copy(state.get_name().begin(), state.get_name().end(),
             std::back_inserter(message));
   if (sendto(game_socket, message.data(), message.size(), 0,
-             server_addr->ai_addr, server_addr->ai_addrlen) < (long int)message.size())
+             server_addr->ai_addr,
+             server_addr->ai_addrlen) < (long int)message.size())
     syserr("Could not send datagram to server");
 }
 
@@ -113,11 +114,11 @@ void ClientManager::parse_server_buffer(ssize_t size) {
   auto game_number_check = state.valid_game_number(game_number);
   if (game_number_check == INVALID) {
     // a datagram from one of the previous games
+    warning("Invalid game number");
     return;
   } else if (game_number_check == VALID_NEW_GAME) {
     // a new game has started
     state.reset();
-    return;
   }
 
   ssize_t counter = GAME_NO_BYTES;

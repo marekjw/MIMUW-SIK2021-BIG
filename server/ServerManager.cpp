@@ -20,12 +20,12 @@ void ServerManager::start() {
 }
 [[noreturn]] void ServerManager::main_loop() {
   while (true) {
-    auto wake_up_at = std::chrono::steady_clock::now() +
-                      std::chrono::milliseconds(round_time);
+    /*
+     auto wake_up_at = std::chrono::steady_clock::now() +
+                       std::chrono::milliseconds(round_time);*/
     state.disconnect_inactive_ones();
     if (state.can_start_game()) {
       state.set_up_new_game();
-
       add_event(NewGameEvent(events.size(), state.get_players(),
                              state.get_max_y(), state.get_max_x()));
 
@@ -53,7 +53,7 @@ void ServerManager::start() {
       next_event_to_send = 0;
       event_mutex.unlock();
     }
-    std::this_thread::sleep_until(wake_up_at);
+    // std::this_thread::sleep_until(wake_up_at);
   }
 }
 
@@ -142,10 +142,7 @@ void ServerManager::add_event(const Event &event) {
 }
 
 void ServerManager::send_events_queue() {
-  // TODO może zmienic??
-
   state.get_map_mutex().lock();
-
   for (auto &it : state.get_players_map()) {
     if (it.second.is_connected()) {
       send_events_to(next_event_to_send, &it.second.get_address());
@@ -155,6 +152,7 @@ void ServerManager::send_events_queue() {
   for (auto &it : state.get_spectators_map())
     send_events_to(next_event_to_send, &(it.second.get_address()));
 
+  next_event_to_send = events.size();
   state.get_map_mutex().unlock();
 }
 
